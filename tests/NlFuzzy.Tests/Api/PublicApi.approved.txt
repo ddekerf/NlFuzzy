@@ -1,0 +1,133 @@
+public sealed class NlFuzzy.Comparison.DutchFuzzyScorer
+    .ctor(NlFuzzy.DutchFuzzyOptions options, NlFuzzy.Phonetics.IPhoneticEncoder encoder = ..., NlFuzzy.Normalization.IDutchTextNormalizer normalizer = ...)
+    NlFuzzy.Comparison.DutchFuzzyScorer Default { get; }
+    NlFuzzy.DutchFuzzyOptions Options { get; }
+    NlFuzzy.Phonetics.IPhoneticEncoder Encoder { get; }
+    System.Double Score(System.String a, System.String b)
+public sealed class NlFuzzy.Comparison.DutchPhoneticEqualityComparer
+    .ctor(NlFuzzy.DutchFuzzyOptions options = ...)
+    NlFuzzy.Comparison.DutchPhoneticEqualityComparer Default { get; }
+    System.Boolean Equals(System.String x, System.String y)
+    System.Int32 GetHashCode(System.String obj)
+public sealed class NlFuzzy.Distance.DamerauLevenshteinDistance
+    .ctor()
+    NlFuzzy.Distance.DamerauLevenshteinDistance Instance { get; }
+    System.Double Distance(System.String a, System.String b)
+    System.Double Normalized(System.String a, System.String b) [static]
+    System.Int32 Compute(System.String a, System.String b) [static]
+public sealed class NlFuzzy.Distance.DiceCoefficientSimilarity
+    .ctor()
+    NlFuzzy.Distance.DiceCoefficientSimilarity Instance { get; }
+    System.Double Similarity(System.String a, System.String b)
+public interface NlFuzzy.Distance.IStringDistance
+    System.Double Distance(System.String a, System.String b)
+public interface NlFuzzy.Distance.IStringSimilarity
+    System.Double Similarity(System.String a, System.String b)
+public sealed class NlFuzzy.Distance.JaroWinklerSimilarity
+    .ctor(System.Double scalingFactor = ...)
+    NlFuzzy.Distance.JaroWinklerSimilarity Instance { get; }
+    System.Double JaroSimilarity(System.String a, System.String b) [static]
+    System.Double Similarity(System.String a, System.String b)
+public sealed class NlFuzzy.Distance.LevenshteinDistance
+    .ctor()
+    NlFuzzy.Distance.LevenshteinDistance Instance { get; }
+    System.Double Distance(System.String a, System.String b)
+    System.Double Normalized(System.String a, System.String b) [static]
+    System.Int32 Compute(System.String a, System.String b) [static]
+public sealed class NlFuzzy.Distance.TokenSetSimilarity
+    .ctor()
+    .ctor(NlFuzzy.Distance.IStringSimilarity inner)
+    NlFuzzy.Distance.TokenSetSimilarity Instance { get; }
+    System.Double Similarity(System.String a, System.String b)
+    System.String SortTokens(System.String value) [static]
+public static class NlFuzzy.DutchEnumerableExtensions
+    System.Collections.Generic.IEnumerable<NlFuzzy.FuzzyMatch<System.String>> FuzzyMatchDutch(System.Collections.Generic.IEnumerable<System.String> source, System.String query, System.Double threshold = ..., System.Int32 take = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Collections.Generic.IEnumerable<NlFuzzy.FuzzyMatch<T>> FuzzyMatchDutch<T>(System.Collections.Generic.IEnumerable<T> source, System.String query, System.Func<T, System.String> selector, System.Double threshold = ..., System.Int32 take = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Nullable<NlFuzzy.FuzzyMatch<T>> BestDutchMatch<T>(System.Collections.Generic.IEnumerable<T> source, System.String query, System.Func<T, System.String> selector, System.Double threshold = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
+public static class NlFuzzy.DutchFuzzy
+    System.Boolean AreEquivalent(System.String a, System.String b, System.Double threshold, NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Boolean SoundsLike(System.String a, System.String b, NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Collections.Generic.IReadOnlyList<System.String> PhoneticKeys(System.String value, NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Double Similarity(System.String a, System.String b, NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.String PhoneticKey(System.String value, NlFuzzy.DutchFuzzyOptions options = ...) [static]
+public sealed class NlFuzzy.DutchFuzzyOptions
+    .ctor()
+    NlFuzzy.DutchFuzzyOptions <Clone>$()
+    NlFuzzy.DutchFuzzyOptions Default { get; }
+    NlFuzzy.DutchFuzzyOptions Names { get; }
+    NlFuzzy.DutchFuzzyOptions Words { get; }
+    NlFuzzy.DutchPhoneticProfile Profile { get; set; }
+    System.Boolean EncodeVowels { get; set; }
+    System.Boolean Equals(NlFuzzy.DutchFuzzyOptions other)
+    System.Boolean Equals(System.Object obj)
+    System.Boolean RemoveDiacritics { get; set; }
+    System.Boolean SplitGluedNamePrefixes { get; set; }
+    System.Boolean StripNamePrefixes { get; set; }
+    System.Double DefaultThreshold { get; set; }
+    System.Double FinalPhonemeMismatchPenalty { get; set; }
+    System.Double IdenticalKeyFloor { get; set; }
+    System.Double InitialPhonemeMismatchPenalty { get; set; }
+    System.Double NGramWeight { get; set; }
+    System.Double OrthographicWeight { get; set; }
+    System.Double PhoneticWeight { get; set; }
+    System.Int32 GetHashCode()
+    System.Int32 MaxKeyLength { get; set; }
+    System.String ToString()
+    System.Void Validate()
+public enum NlFuzzy.DutchPhoneticProfile
+    NlFuzzy.DutchPhoneticProfile Strict = 0
+    NlFuzzy.DutchPhoneticProfile Tolerant = 1
+    System.Int32 value__
+public static class NlFuzzy.DutchStringExtensions
+    System.Boolean DutchFuzzyEquals(System.String value, System.String other, System.Double threshold = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Boolean SoundsLikeDutch(System.String value, System.String other, NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Double DefaultThreshold = 0.82
+    System.Double DutchSimilarity(System.String value, System.String other, NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.String ToDutchPhoneticKey(System.String value, NlFuzzy.DutchFuzzyOptions options = ...) [static]
+public struct NlFuzzy.FuzzyMatch<T>
+    .ctor(T Value, System.String Text, System.Double Score, System.String PhoneticKey)
+    System.Boolean Equals(NlFuzzy.FuzzyMatch<T> other)
+    System.Boolean Equals(System.Object obj)
+    System.Double Score { get; set; }
+    System.Int32 GetHashCode()
+    System.String PhoneticKey { get; set; }
+    System.String Text { get; set; }
+    System.String ToString()
+    System.Void Deconstruct(ref T Value, ref System.String Text, ref System.Double Score, ref System.String PhoneticKey)
+    T Value { get; set; }
+public sealed class NlFuzzy.Indexing.DutchFuzzyIndex<T>
+    .ctor(System.Collections.Generic.IEnumerable<T> items, System.Func<T, System.String> selector, NlFuzzy.DutchFuzzyOptions options = ...)
+    NlFuzzy.DutchFuzzyOptions Options { get; }
+    System.Collections.Generic.IReadOnlyList<NlFuzzy.FuzzyMatch<T>> Search(System.String query, System.Double threshold = ..., System.Int32 take = ...)
+    System.Collections.Generic.IReadOnlyList<NlFuzzy.FuzzyMatch<T>> Search(System.String query, System.Double threshold, System.Int32 take, System.Boolean allowFullScan)
+    System.Int32 Count { get; }
+    System.Int32 PrefixBlockLength = 4
+    System.Void Add(T item)
+public static class NlFuzzy.Normalization.DutchAffixes
+    System.Boolean IsParticle(System.String token) [static]
+    System.Int32 MaxLeadingParticles = 3
+    System.Int32 MinimumStemLength = 3
+    System.String MovePrefixesToEnd(System.String value) [static]
+    System.String MovePrefixesToEnd(System.String value, System.Boolean includeGluedOnlyParticles) [static]
+    System.String SplitGluedPrefixes(System.String value) [static]
+public sealed class NlFuzzy.Normalization.DutchTextNormalizer
+    .ctor()
+    NlFuzzy.Normalization.DutchTextNormalizer Instance { get; }
+    System.String Normalize(System.String value, NlFuzzy.DutchFuzzyOptions options)
+public interface NlFuzzy.Normalization.IDutchTextNormalizer
+    System.String Normalize(System.String value, NlFuzzy.DutchFuzzyOptions options)
+public sealed class NlFuzzy.Phonetics.ColognePhoneticEncoder
+    .ctor(NlFuzzy.DutchFuzzyOptions options, NlFuzzy.Normalization.IDutchTextNormalizer normalizer = ...)
+    NlFuzzy.Phonetics.ColognePhoneticEncoder Default { get; }
+    System.Collections.Generic.IReadOnlyList<System.String> EncodeTokens(System.String value)
+    System.String Encode(System.String value)
+    System.String EncodeWord(System.String word) [static]
+public sealed class NlFuzzy.Phonetics.DutchPhoneticEncoder
+    .ctor(NlFuzzy.DutchFuzzyOptions options, NlFuzzy.Normalization.IDutchTextNormalizer normalizer = ...)
+    NlFuzzy.Phonetics.DutchPhoneticEncoder Default { get; }
+    System.Boolean IsVowelClass(System.Char c) [static]
+    System.Collections.Generic.IReadOnlyList<System.String> EncodeTokens(System.String value)
+    System.String Encode(System.String value)
+public interface NlFuzzy.Phonetics.IPhoneticEncoder
+    System.Collections.Generic.IReadOnlyList<System.String> EncodeTokens(System.String value)
+    System.String Encode(System.String value)

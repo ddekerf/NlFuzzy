@@ -1,0 +1,26 @@
+## .NET
+bin/
+obj/
+artifacts/
+[Bb]uild[Ll]og.*
+*.binlog
+
+## Test- en coverageresultaten
+TestResults/
+BenchmarkDotNet.Artifacts/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.received.txt
+
+## IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0;net10.0</TargetFrameworks>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <PackageId>NlFuzzy</PackageId>
+    <Version>1.0.0</Version>
+    <Title>NlFuzzy - Dutch phonetic and fuzzy string matching</Title>
+    <Description>Sounds-like and fuzzy string matching tuned for the Dutch language, with a Dutch phonetic encoder, Cologne phonetics, Levenshtein, Damerau-Levenshtein, Jaro-Winkler and Dice similarity, plus simple extension methods. No runtime dependencies.</Description>
+    <PackageTags>dutch;nederlands;fuzzy;phonetic;soundex;metaphone;soundslike;string-matching;fonetisch</PackageTags>
+    <Authors>NlFuzzy contributors</Authors>
+    <Company>NlFuzzy contributors</Company>
+    <Product>NlFuzzy</Product>
+    <Copyright>Copyright (c) 2026 NlFuzzy contributors</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/ddekerf/NlFuzzy</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ddekerf/NlFuzzy</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>NlFuzzy</RootNamespace>
+    <AssemblyName>NlFuzzy</AssemblyName>
+    <!--
+      These analyzers all suggest APIs that do not exist on netstandard2.0
+      (ArgumentNullException.ThrowIfNull, string.Contains(char), span-based string.Concat).
+      The library multi-targets down to netstandard2.0 and stays dependency free, so the
+      suggested replacements are not available on every target framework.
+    -->
+    <NoWarn>$(NoWarn);CA1510;CA1511;CA1512;CA1513;CA2249;CA1845</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="NlFuzzy.Tests" />
+  </ItemGroup>
+
+</Project>

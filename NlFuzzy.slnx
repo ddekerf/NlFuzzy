@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/bench/">
+    <Project Path="bench/NlFuzzy.Benchmarks/NlFuzzy.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/NlFuzzy.Sample.Console/NlFuzzy.Sample.Console.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/NlFuzzy/NlFuzzy.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/NlFuzzy.Tests/NlFuzzy.Tests.csproj" />
+  </Folder>
+</Solution>

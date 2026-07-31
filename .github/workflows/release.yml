@@ -1,0 +1,58 @@
+name: release
+
+# Versiebeleid: het versienummer staat handmatig in src/NlFuzzy/NlFuzzy.csproj (<Version>).
+# Werkwijze: bump <Version>, werk CHANGELOG.md bij, commit, tag met v<Version> en push de tag.
+# De workflow controleert dat de tag en <Version> overeenkomen voordat er gepusht wordt.
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Verify tag matches <Version>
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version=$(grep -oPm1 '(?<=<Version>)[^<]+' src/NlFuzzy/NlFuzzy.csproj)
+          echo "tag=$tag csproj=$version"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME komt niet overeen met <Version>$version</Version>"
+            exit 1
+          fi
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release
+
+      - name: Pack
+        run: dotnet pack src/NlFuzzy/NlFuzzy.csproj --no-build --configuration Release --output ./artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: ./artifacts/*.nupkg
+
+      - name: Push to nuget.org
+        run: >
+          dotnet nuget push ./artifacts/*.nupkg
+          --api-key ${{ secrets.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate

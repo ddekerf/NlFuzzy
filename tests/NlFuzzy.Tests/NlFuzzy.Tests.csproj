@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CA1861;CA1707;CA1859;CA1515;CA5394;CA1861</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Golden\positive-pairs.csv" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Golden\negative-pairs.csv" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Api\PublicApi.approved.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NlFuzzy\NlFuzzy.csproj" />
+  </ItemGroup>
+
+</Project>
