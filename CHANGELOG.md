@@ -27,7 +27,63 @@ De release-workflow controleert dat de git-tag `v<Version>` daarmee overeenkomt.
 
 ## [Unreleased]
 
-Nog geen wijzigingen.
+Reactie op de code review van 31 juli 2026 (`review.md`). Deze wijzigingen gaan vooraf aan de
+eerste publicatie op nuget.org.
+
+### Gewijzigd
+
+- **`DutchFuzzyIndex<T>.Search` is standaard exact.** De index gaf geen enkel resultaat buiten de
+  fonetische blokken zodra er één (mogelijk irrelevante) blokkandidaat bestond, ook niet wanneer een
+  ander item ruim boven de drempel scoorde. De nieuwe standaardmodus
+  `DutchFuzzyIndexSearchMode.Exact` scoort elk item met de voorbewerkte sleutels en levert daarmee
+  exact hetzelfde resultaat als `FuzzyMatchDutch`. **Breaking:** de overload
+  `Search(string, double, int, bool allowFullScan)` is vervangen door
+  `Search(string, double?, int, DutchFuzzyIndexSearchMode)`; `allowFullScan: false` komt overeen met
+  `DutchFuzzyIndexSearchMode.BlockedOnly`, `allowFullScan: true` met
+  `DutchFuzzyIndexSearchMode.Blocked` (die nu ook terugvalt zodra de blokken minder dan `take`
+  treffers opleveren).
+- **`DefaultThreshold` doet nu wat de documentatie belooft.** `threshold` is overal een
+  `double?`; wordt die weggelaten (of `null`), dan geldt de `DefaultThreshold` van de meegegeven
+  opties in plaats van de compile-time constante 0.82. **Breaking:** de signatuur van
+  `DutchFuzzy.AreEquivalent`, `DutchStringExtensions.DutchFuzzyEquals`,
+  `DutchEnumerableExtensions.FuzzyMatchDutch`, `BestDutchMatch` en `DutchFuzzyIndex<T>.Search`
+  wijzigde daarvoor.
+- **Drempelvalidatie is gecentraliseerd.** Elke publieke ingang wijst nu `NaN`, `±∞` en waarden
+  buiten `[0, 1]` af met een `ArgumentOutOfRangeException`. Voorheen gaf
+  `AreEquivalent("a", "b", -1)` stil `true` en leverde `NaN` stil geen treffers op.
+- **Ranking gebruikt een begrensde top-k-heap.** Bij een positieve `take` bewaren
+  `FuzzyMatchDutch` en `DutchFuzzyIndex<T>.Search` niet langer alle kwalificerende treffers om die
+  volledig te sorteren; het geheugengebruik is nu `O(take)` in plaats van `O(n)`.
+
+### Opgelost
+
+- **Unicode-normalisatie stond in een onveilige volgorde.** Speciale tekens werden uitgebreid
+  vóór lowercasing en Unicode-decompositie, waardoor tekens die pas daarna ontstaan werden
+  weggefilterd: `"STRAẞE"` werd `"stra e"` in plaats van `"strasse"` en `"ǽgir"` werd `"gir"` in
+  plaats van `"aegir"`.
+- **`ColognePhoneticEncoder.EncodeWord` deed geen Duitse preprocessing.** `"Änne"` gaf een andere
+  code dan `"Anne"` en `"Straße"` een andere dan `"Strasse"`; `Encode` en `EncodeWord` delen nu
+  dezelfde folding.
+- **`DutchFuzzyOptions.Validate` accepteerde oneindige gewichten en onbekende profielen.**
+  Niet-eindige waarden leidden tot een `NaN`-score; een onbekende `DutchPhoneticProfile` viel stil
+  terug op `Tolerant`. Beide worden nu afgewezen, net als een gewichtssom die niet eindig is.
+- **`JaroWinklerSimilarity` accepteerde `double.NaN` als scaling factor** en schond daarmee zijn
+  eigen `[0, 1]`-contract.
+- README: het uitvoeralfabet vermeldt nu ook `A` (woordinitiële klinker bij `EncodeVowels = false`).
+
+### Toegevoegd
+
+- `DutchFuzzyIndexSearchMode` (`Exact`, `Blocked`, `BlockedOnly`) met expliciete recall-garanties.
+- Pariteitstests die de index op adversariale datasets vergelijken met de lineaire scan, plus
+  seeded property/fuzztests (score altijd eindig in `[0, 1]`, symmetrisch en reflexief,
+  normalisatie idempotent, canoniek equivalente Unicode geeft dezelfde sleutel).
+- Testproject draait op `net8.0` én `net10.0`.
+- Benchmarks voor hoge/lage drempels, korte/lange invoer, worst-case bucketverdeling en de drie
+  zoekmodi, allemaal met `[MemoryDiagnoser]`.
+- `CONTRIBUTING.md` (inbound=outbound), `PROVENANCE.md` en `THIRD-PARTY-NOTICES.md`.
+- Documentatie over maximale aanbevolen invoerlengte bij onbetrouwbare invoer.
+- Dependabot voor NuGet- en GitHub Actions-updates; workflows draaien met minimale permissies en
+  gepinde actions.
 
 ## [1.0.0] - 2026-07-31
 

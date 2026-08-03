@@ -5,7 +5,11 @@ namespace NlFuzzy;
 /// <summary>Convenience extension methods for Dutch phonetic and fuzzy comparison of strings.</summary>
 public static class DutchStringExtensions
 {
-    /// <summary>The default similarity threshold used by the extension methods.</summary>
+    /// <summary>The similarity threshold used when neither the caller nor the options specify one.</summary>
+    /// <remarks>
+    /// This is the same value as <see cref="DutchFuzzyOptions.DefaultThreshold"/> on
+    /// <see cref="DutchFuzzyOptions.Default"/>. Supply custom options to change the effective default.
+    /// </remarks>
     public const double DefaultThreshold = 0.82;
 
     /// <summary>Returns the Dutch phonetic key for this string.</summary>
@@ -35,7 +39,10 @@ public static class DutchStringExtensions
     /// <summary>True when <see cref="DutchSimilarity"/> is greater than or equal to the threshold.</summary>
     /// <param name="value">The first string.</param>
     /// <param name="other">The second string.</param>
-    /// <param name="threshold">The minimum score. Defaults to 0.82.</param>
+    /// <param name="threshold">
+    /// The minimum score. Defaults to the <see cref="DutchFuzzyOptions.DefaultThreshold"/> of
+    /// <paramref name="options"/> (0.82 for the default options).
+    /// </param>
     /// <param name="options">Optional options. Defaults to <see cref="DutchFuzzyOptions.Default"/>.</param>
     /// <returns>True when the score reaches the threshold.</returns>
     /// <remarks>
@@ -44,10 +51,13 @@ public static class DutchStringExtensions
     /// comparer for a dictionary or a set.
     /// </remarks>
     /// <exception cref="ArgumentNullException">Thrown when an argument is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="threshold"/> is NaN, infinite or outside [0, 1].
+    /// </exception>
     public static bool DutchFuzzyEquals(
         this string value,
         string other,
-        double threshold = DefaultThreshold,
+        double? threshold = null,
         DutchFuzzyOptions? options = null) =>
         DutchFuzzy.AreEquivalent(value, other, threshold, options);
 }

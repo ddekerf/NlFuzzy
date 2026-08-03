@@ -39,6 +39,30 @@ public class ColognePhoneticEncoderTests
             ColognePhoneticEncoder.Default.Encode("Müller"));
     }
 
+    [Theory]
+    [InlineData("Änne", "Anne")]
+    [InlineData("Müller", "Muller")]
+    [InlineData("Lüdenscheidt", "Ludenscheidt")]
+    [InlineData("Öl", "Ol")]
+    [InlineData("Straße", "Strasse")]
+    [InlineData("STRAẞE", "Strasse")]
+    public void EncodeWord_AppliesTheSameGermanPreprocessingAsEncode(string value, string ascii)
+    {
+        var encoded = ColognePhoneticEncoder.EncodeWord(value);
+
+        Assert.NotEqual(string.Empty, encoded);
+        Assert.Equal(ColognePhoneticEncoder.EncodeWord(ascii), encoded);
+        Assert.Equal(ColognePhoneticEncoder.Default.Encode(value), encoded);
+    }
+
+    [Theory]
+    [InlineData("Änne", "06")]
+    [InlineData("Öl", "05")]
+    public void EncodeWord_TreatsUmlautsAsTheirBaseVowel(string value, string expected)
+    {
+        Assert.Equal(expected, ColognePhoneticEncoder.EncodeWord(value));
+    }
+
     [Fact]
     public void ThrowsOnNull()
     {

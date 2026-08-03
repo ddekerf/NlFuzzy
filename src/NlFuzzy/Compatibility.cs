@@ -27,5 +27,21 @@ namespace NlFuzzy
 
             return value > max ? max : value;
         }
+
+        /// <summary>True when <paramref name="value"/> is neither NaN nor an infinity.</summary>
+        internal static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
+    }
+
+    /// <summary>Enum helpers that work on every target framework.</summary>
+    internal static class EnumCompat
+    {
+        /// <summary>True when <paramref name="value"/> is a declared member of <typeparamref name="TEnum"/>.</summary>
+        internal static bool IsDefined<TEnum>(TEnum value)
+            where TEnum : struct, Enum =>
+#if NETSTANDARD2_0
+            Enum.IsDefined(typeof(TEnum), value);
+#else
+            Enum.IsDefined(value);
+#endif
     }
 }

@@ -141,4 +141,44 @@ public class DutchEnumerableExtensionsTests
         Assert.Throws<ArgumentOutOfRangeException>(() => Customers.FuzzyMatchDutch("a", c => c.Name, threshold: 1.5).ToList());
         Assert.Throws<ArgumentOutOfRangeException>(() => Customers.FuzzyMatchDutch("a", c => c.Name, threshold: -0.1).ToList());
     }
+
+    [Fact]
+    public void FuzzyMatchDutch_TakeReturnsThePrefixOfTheCompleteRanking()
+    {
+        var all = Customers.FuzzyMatchDutch("Jan Meyer", c => c.Name, 0d, take: 0)
+            .Select(m => Math.Round(m.Score, 12))
+            .ToList();
+
+        for (var take = 1; take <= Customers.Length; take++)
+        {
+            var top = Customers.FuzzyMatchDutch("Jan Meyer", c => c.Name, 0d, take)
+                .Select(m => Math.Round(m.Score, 12))
+                .ToList();
+
+            Assert.Equal(all.Take(take), top);
+        }
+    }
+
+    [Fact]
+    public void FuzzyMatchDutch_BoundedTakeKeepsTheBestScoresOnLargeInput()
+    {
+        var random = new Random(4242);
+        var syllables = new[] { "ba", "kui", "mei", "schoen", "vis", "jan", "de", "broe", "ker", "sen" };
+
+        var items = Enumerable.Range(0, 5_000)
+            .Select(i => new Customer(
+                i,
+                string.Concat(Enumerable.Range(0, 3).Select(_ => syllables[random.Next(syllables.Length)]))))
+            .ToList();
+
+        var top5 = items.FuzzyMatchDutch("kuipersen", c => c.Name, 0d, take: 5).ToList();
+        var expected = items
+            .FuzzyMatchDutch("kuipersen", c => c.Name, 0d, take: 0)
+            .Take(5)
+            .Select(m => Math.Round(m.Score, 12))
+            .ToList();
+
+        Assert.Equal(5, top5.Count);
+        Assert.Equal(expected, top5.Select(m => Math.Round(m.Score, 12)));
+    }
 }

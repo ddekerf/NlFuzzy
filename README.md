@@ -90,7 +90,28 @@ var index = new DutchFuzzyIndex<string>(
 
 var resultaat = index.Search("Anna Schoenmaker", threshold: 0.70, take: 3);
 // resultaat[0].Value == "Anna Schoenmakers"
+
+// Sneller, maar approximatief: alleen de fonetische blokken.
+var snel = index.Search("Anna Schoenmaker", 0.70, 3, DutchFuzzyIndexSearchMode.BlockedOnly);
 ```
+
+`Search` staat standaard op `DutchFuzzyIndexSearchMode.Exact` en geeft dus exact dezelfde treffers
+als `FuzzyMatchDutch` op dezelfde items en opties. Zie [§6](#6-wanneer-dit-niet-werkt) voor de
+afweging tussen `Exact`, `Blocked` en `BlockedOnly`.
+
+### 3.6 Drempels
+
+Laat je `threshold` weg, dan gebruiken `DutchFuzzyEquals`, `FuzzyMatchDutch`, `BestDutchMatch` en
+`DutchFuzzyIndex.Search` de `DefaultThreshold` van de meegegeven opties (0.82 voor de presets):
+
+```csharp
+var streng = DutchFuzzyOptions.Names with { DefaultThreshold = 0.90 };
+
+bool zelfde = "Meijer".DutchFuzzyEquals("Meier", threshold: null, streng); // gebruikt 0.90
+```
+
+Een drempel moet een eindig getal in `[0, 1]` zijn; `NaN`, oneindig en waarden erbuiten leveren een
+`ArgumentOutOfRangeException` op in plaats van een stil verkeerd resultaat.
 
 ### Bonus: ontdubbelen met de equality comparer
 
@@ -133,7 +154,8 @@ De encoder laat de volgende paren op dezelfde sleutel uitkomen (profiel `Toleran
 | ou / au / auw / ouw | `kauw` = `kou` (klasse 7) | — |
 
 Het uitvoeralfabet is `P B T D K G F V W S Z X J L M N R H Q` plus de klinkerklassen `1`-`7`
-(alleen zichtbaar wanneer `EncodeVowels = true`).
+(alleen zichtbaar wanneer `EncodeVowels = true`) en `A` voor een woordinitiële klinker wanneer
+`EncodeVowels = false`.
 
 ## 5. Profielen en presets
 
@@ -222,9 +244,15 @@ Zet ze op `0` om het klassieke gedrag terug te krijgen.
   fonetisch dicht bij elkaar, en de score is dan nauwelijks informatief. Verhoog de drempel of
   vergelijk zulke velden exact.
 - **Cijfers en leestekens** worden weggegooid; huisnummers en initialen dragen niets bij.
-- **De volledige-scanfallback van de index.** Vindt `DutchFuzzyIndex.Search` geen enkel blok, dan
-  scoort hij standaard élk item. Gebruik `Search(query, threshold, take, allowFullScan: false)`
-  wanneer je die worst case wilt uitsluiten.
+- **De zoekmodus van de index.** `DutchFuzzyIndex.Search` staat standaard op
+  `DutchFuzzyIndexSearchMode.Exact`: elk item wordt gescoord (met hergebruikte, voorbewerkte
+  sleutels), zodat het resultaat identiek is aan een lineaire scan. `Blocked` scoort eerst de
+  fonetische blokken en valt terug op een volledige scan zodra die minder dan `take` treffers
+  opleveren; `BlockedOnly` doet dat nooit. Beide blokmodi zijn dus **approximatief**: een item
+  buiten de blokken kan gemist worden ook al haalt het de drempel. Kies bewust — recall (`Exact`)
+  of een harde bovengrens op de querykost (`BlockedOnly`).
+- **Zeer lange invoer.** De edit-distance-componenten zijn kwadratisch in de lengte. Begrens de
+  invoer wanneer die van buiten komt; zie [§9](#9-prestaties).
 
 ## 7. Sleutels persisteren
 
@@ -263,7 +291,8 @@ gebruikt hebt.
 | `ColognePhoneticEncoder` | Kölner Phonetik, als tweede, onafhankelijke baseline |
 | `DutchFuzzyScorer` | de gewogen score |
 | `DutchPhoneticEqualityComparer` | `IEqualityComparer<string>` voor `Dictionary`, `HashSet`, `GroupBy` |
-| `DutchFuzzyIndex<T>` | geblokte in-memory index |
+| `DutchFuzzyIndex<T>` | in-memory index met voorbewerkte sleutels; exact of geblokt zoeken |
+| `DutchFuzzyIndexSearchMode` | `Exact` (standaard), `Blocked`, `BlockedOnly` |
 | `LevenshteinDistance`, `DamerauLevenshteinDistance` (OSA), `JaroWinklerSimilarity`, `DiceCoefficientSimilarity`, `TokenSetSimilarity` | losse afstands- en gelijkenisalgoritmes |
 
 Alle types zijn draadveilig zodra ze geconstrueerd zijn; `DutchFuzzyIndex<T>` is dat niet voor
@@ -280,20 +309,36 @@ preset `Names`. Reproduceer met `dotnet run --project bench/NlFuzzy.Benchmarks -
 | `DutchFuzzy.Similarity` | ~4,8 µs per paar |
 | `FuzzyMatchDutch` (lineaire scan) | ~171 ms over 50.000 items |
 | `new DutchFuzzyIndex<T>(...)` | ~415 ms voor 100.000 items |
-| `DutchFuzzyIndex.Search` | ~12 ms per query op 100.000 items |
+| `DutchFuzzyIndex.Search` (`Blocked`) | ~12 ms per query op 100.000 items |
 
-Twee dingen om te weten:
+Drie dingen om te weten:
 
 - **De index loont pas bij bulk.** Voor een eenmalige lookup is de lineaire `FuzzyMatchDutch`
   goedkoper dan het bouwen van een index.
+- **`Exact` kost O(n) scores per query**, maar hergebruikt wel de voorbewerkte normalisatie en
+  sleutel van elk item, en is daardoor nog steeds sneller dan een lineaire scan over ruwe strings.
+  `Blocked` en `BlockedOnly` zijn sneller en minder volledig; benchmark beide op je eigen data met
+  `IndexBenchmarks` (bevat `ExactSearch`, `BlockedSearch`, `BlockedOnlySearch` en
+  `WorstCaseBucketSearch` voor hoge en lage drempels, met en zonder `take`).
 - **De meting hierboven is een worst case.** Synthetische namen delen veel prefixen, waardoor de
   blokken groot worden. Op echte, meer gespreide data is een query beduidend sneller. Meet dus op
-  je eigen data, en zet `allowFullScan: false` als je een harde bovengrens nodig hebt.
+  je eigen data, en gebruik `DutchFuzzyIndexSearchMode.BlockedOnly` als je een harde bovengrens
+  nodig hebt.
+
+### Invoerlengte en onbetrouwbare invoer
+
+Levenshtein, Damerau-Levenshtein en Jaro-Winkler zijn `O(n·m)` in de lengte van de invoer. Komt de
+invoer van een webformulier of API, begrens die dan expliciet voordat je vergelijkt. Als richtlijn:
+namen en adressen blijven ruim onder de 128 tekens; hanteer 256 tekens als bovengrens en weiger of
+kap alles wat langer is. `InputLengthBenchmarks` in `bench/NlFuzzy.Benchmarks` meet die groei
+(8 t/m 2.048 tekens) inclusief allocaties.
 
 Interne optimalisaties die je niet hoeft aan te zetten: normalisatie en fonetische codering worden
 per string één keer gedaan en hergebruikt over alle vergelijkingen (`PreparedText`), diakriet-
-verwijdering slaat de Unicode-normalisatie over voor pure ASCII, en de Dice-bigrammen worden als
-gepakte `int`-sleutels vergeleken in plaats van als strings.
+verwijdering slaat de Unicode-normalisatie over voor pure ASCII, de Dice-bigrammen worden als
+gepakte `int`-sleutels vergeleken in plaats van als strings, en bij een positieve `take` houden
+`FuzzyMatchDutch` en `DutchFuzzyIndex.Search` alleen een begrensde top-k-heap bij in plaats van
+alle treffers te bewaren en volledig te sorteren.
 
 ## 10. Repository
 
@@ -345,8 +390,13 @@ Verwante .NET-bibliotheken:
 - F23.StringSimilarity — <https://www.nuget.org/packages/F23.StringSimilarity>
 
 Alle algoritmes in deze bibliotheek zijn zelfstandig geïmplementeerd op basis van openbare
-beschrijvingen. Er is geen code overgenomen uit GPL-gelicenseerde bronnen.
+beschrijvingen. Er is geen code overgenomen uit GPL-gelicenseerde bronnen en geen implementatie van
+derden geport. De onderbouwing per component staat in [PROVENANCE.md](PROVENANCE.md); de
+dependency-status staat in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ## 12. Licentie
 
 MIT. Zie [LICENSE](LICENSE).
+
+Bijdragen vallen onder dezelfde MIT-licentie (inbound = outbound); zie
+[CONTRIBUTING.md](CONTRIBUTING.md).

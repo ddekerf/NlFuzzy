@@ -9,10 +9,10 @@
     <Title>NlFuzzy - Dutch phonetic and fuzzy string matching</Title>
     <Description>Sounds-like and fuzzy string matching tuned for the Dutch language, with a Dutch phonetic encoder, Cologne phonetics, Levenshtein, Damerau-Levenshtein, Jaro-Winkler and Dice similarity, plus simple extension methods. No runtime dependencies.</Description>
     <PackageTags>dutch;nederlands;fuzzy;phonetic;soundex;metaphone;soundslike;string-matching;fonetisch</PackageTags>
-    <Authors>NlFuzzy contributors</Authors>
-    <Company>NlFuzzy contributors</Company>
+    <Authors>ddekerf</Authors>
+    <Company>ddekerf</Company>
     <Product>NlFuzzy</Product>
-    <Copyright>Copyright (c) 2026 NlFuzzy contributors</Copyright>
+    <Copyright>Copyright (c) 2026 ddekerf and the NlFuzzy contributors</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/ddekerf/NlFuzzy</PackageProjectUrl>
@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

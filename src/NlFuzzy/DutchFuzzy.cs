@@ -56,12 +56,22 @@ public static class DutchFuzzy
     /// <summary>True when <see cref="Similarity"/> reaches <paramref name="threshold"/>.</summary>
     /// <param name="a">The first string.</param>
     /// <param name="b">The second string.</param>
-    /// <param name="threshold">The minimum score, in [0, 1].</param>
+    /// <param name="threshold">
+    /// The minimum score. Defaults to the <see cref="DutchFuzzyOptions.DefaultThreshold"/> of
+    /// <paramref name="options"/> (0.82 for the default options).
+    /// </param>
     /// <param name="options">Optional options. Defaults to <see cref="DutchFuzzyOptions.Default"/>.</param>
     /// <returns>True when the score is greater than or equal to the threshold.</returns>
     /// <exception cref="ArgumentNullException">Thrown when an argument is null.</exception>
-    public static bool AreEquivalent(string a, string b, double threshold, DutchFuzzyOptions? options = null) =>
-        Similarity(a, b, options) >= threshold;
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="threshold"/> is NaN, infinite or outside [0, 1].
+    /// </exception>
+    public static bool AreEquivalent(string a, string b, double? threshold = null, DutchFuzzyOptions? options = null)
+    {
+        var minimumScore = Thresholds.Resolve(threshold, options, nameof(threshold));
+
+        return Similarity(a, b, options) >= minimumScore;
+    }
 
     internal static Phonetics.DutchPhoneticEncoder GetEncoder(DutchFuzzyOptions? options)
     {

@@ -86,6 +86,11 @@ public class DutchFuzzyOptionsTests
     [InlineData(0.45, 0.35, -0.20)]
     [InlineData(0d, 0d, 0d)]
     [InlineData(double.NaN, 0.35, 0.20)]
+    [InlineData(double.PositiveInfinity, 0.35, 0.20)]
+    [InlineData(0.45, double.PositiveInfinity, 0.20)]
+    [InlineData(0.45, 0.35, double.PositiveInfinity)]
+    [InlineData(double.NegativeInfinity, 0.35, 0.20)]
+    [InlineData(1e308, 1e308, 1e308)]
     public void Validate_RejectsInvalidWeights(double phonetic, double orthographic, double nGram)
     {
         var options = DutchFuzzyOptions.Default with
@@ -96,6 +101,43 @@ public class DutchFuzzyOptionsTests
         };
 
         Assert.Throws<InvalidOperationException>(options.Validate);
+    }
+
+    [Fact]
+    public void Validate_RejectsUnknownProfiles()
+    {
+        var options = DutchFuzzyOptions.Default with { Profile = (DutchPhoneticProfile)42 };
+
+        Assert.Throws<InvalidOperationException>(options.Validate);
+        Assert.Throws<InvalidOperationException>(() => DutchFuzzy.PhoneticKey("Kuipers", options));
+    }
+
+    [Fact]
+    public void Validate_RejectsNonFiniteThresholdsFloorsAndPenalties()
+    {
+        foreach (var value in new[] { double.NaN, double.PositiveInfinity, double.NegativeInfinity })
+        {
+            Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { DefaultThreshold = value }).Validate);
+            Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { IdenticalKeyFloor = value }).Validate);
+            Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { InitialPhonemeMismatchPenalty = value }).Validate);
+            Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { FinalPhonemeMismatchPenalty = value }).Validate);
+        }
+    }
+
+    [Fact]
+    public void Score_StaysFiniteForEveryValidWeightCombination()
+    {
+        var options = DutchFuzzyOptions.Default with
+        {
+            OrthographicWeight = 1e300,
+            PhoneticWeight = 1e300,
+            NGramWeight = 0d,
+        };
+
+        var score = DutchFuzzy.Similarity("Meijer", "Meier", options);
+
+        Assert.False(double.IsNaN(score));
+        Assert.InRange(score, 0d, 1d);
     }
 
     [Fact]

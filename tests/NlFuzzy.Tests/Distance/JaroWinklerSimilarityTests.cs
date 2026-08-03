@@ -69,6 +69,31 @@ public class JaroWinklerSimilarityTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new JaroWinklerSimilarity(0.3));
     }
 
+    [Theory]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NegativeInfinity)]
+    public void Constructor_RejectsNonFiniteScalingFactor(double scalingFactor)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new JaroWinklerSimilarity(scalingFactor));
+    }
+
+    [Theory]
+    [InlineData("MARTHA", "MARHTA")]
+    [InlineData("kuipers", "kuypers")]
+    [InlineData("a", "b")]
+    [InlineData("", "abc")]
+    public void Similarity_StaysFiniteAndInsideTheUnitInterval(string a, string b)
+    {
+        foreach (var factor in new[] { 0d, 0.05, 0.1, 0.25 })
+        {
+            var score = new JaroWinklerSimilarity(factor).Similarity(a, b);
+
+            Assert.False(double.IsNaN(score));
+            Assert.InRange(score, 0d, 1d);
+        }
+    }
+
     [Fact]
     public void Constructor_AcceptsCustomScalingFactor()
     {

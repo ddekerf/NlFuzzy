@@ -15,16 +15,19 @@ public sealed class JaroWinklerSimilarity : IStringSimilarity
 
     /// <summary>Creates a new instance.</summary>
     /// <param name="scalingFactor">
-    /// The Winkler prefix scaling factor. Must lie in [0, 0.25]. Defaults to 0.1.
+    /// The Winkler prefix scaling factor. Must be a finite number in [0, 0.25]. Defaults to 0.1.
     /// </param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the scaling factor is out of range.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when the scaling factor is not finite or out of range.
+    /// </exception>
     public JaroWinklerSimilarity(double scalingFactor = DefaultScalingFactor)
     {
-        if (scalingFactor < 0 || scalingFactor > 0.25)
+        if (!MathCompat.IsFinite(scalingFactor) || scalingFactor < 0 || scalingFactor > 0.25)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(scalingFactor),
-                "Scaling factor must be between 0 and 0.25.");
+                scalingFactor,
+                "Scaling factor must be a finite number between 0 and 0.25.");
         }
 
         _scalingFactor = scalingFactor;

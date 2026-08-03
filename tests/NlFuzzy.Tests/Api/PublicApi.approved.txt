@@ -41,11 +41,11 @@ public sealed class NlFuzzy.Distance.TokenSetSimilarity
     System.Double Similarity(System.String a, System.String b)
     System.String SortTokens(System.String value) [static]
 public static class NlFuzzy.DutchEnumerableExtensions
-    System.Collections.Generic.IEnumerable<NlFuzzy.FuzzyMatch<System.String>> FuzzyMatchDutch(System.Collections.Generic.IEnumerable<System.String> source, System.String query, System.Double threshold = ..., System.Int32 take = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
-    System.Collections.Generic.IEnumerable<NlFuzzy.FuzzyMatch<T>> FuzzyMatchDutch<T>(System.Collections.Generic.IEnumerable<T> source, System.String query, System.Func<T, System.String> selector, System.Double threshold = ..., System.Int32 take = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
-    System.Nullable<NlFuzzy.FuzzyMatch<T>> BestDutchMatch<T>(System.Collections.Generic.IEnumerable<T> source, System.String query, System.Func<T, System.String> selector, System.Double threshold = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Collections.Generic.IEnumerable<NlFuzzy.FuzzyMatch<System.String>> FuzzyMatchDutch(System.Collections.Generic.IEnumerable<System.String> source, System.String query, System.Nullable<System.Double> threshold = ..., System.Int32 take = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Collections.Generic.IEnumerable<NlFuzzy.FuzzyMatch<T>> FuzzyMatchDutch<T>(System.Collections.Generic.IEnumerable<T> source, System.String query, System.Func<T, System.String> selector, System.Nullable<System.Double> threshold = ..., System.Int32 take = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Nullable<NlFuzzy.FuzzyMatch<T>> BestDutchMatch<T>(System.Collections.Generic.IEnumerable<T> source, System.String query, System.Func<T, System.String> selector, System.Nullable<System.Double> threshold = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
 public static class NlFuzzy.DutchFuzzy
-    System.Boolean AreEquivalent(System.String a, System.String b, System.Double threshold, NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Boolean AreEquivalent(System.String a, System.String b, System.Nullable<System.Double> threshold = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
     System.Boolean SoundsLike(System.String a, System.String b, NlFuzzy.DutchFuzzyOptions options = ...) [static]
     System.Collections.Generic.IReadOnlyList<System.String> PhoneticKeys(System.String value, NlFuzzy.DutchFuzzyOptions options = ...) [static]
     System.Double Similarity(System.String a, System.String b, NlFuzzy.DutchFuzzyOptions options = ...) [static]
@@ -79,7 +79,7 @@ public enum NlFuzzy.DutchPhoneticProfile
     NlFuzzy.DutchPhoneticProfile Tolerant = 1
     System.Int32 value__
 public static class NlFuzzy.DutchStringExtensions
-    System.Boolean DutchFuzzyEquals(System.String value, System.String other, System.Double threshold = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
+    System.Boolean DutchFuzzyEquals(System.String value, System.String other, System.Nullable<System.Double> threshold = ..., NlFuzzy.DutchFuzzyOptions options = ...) [static]
     System.Boolean SoundsLikeDutch(System.String value, System.String other, NlFuzzy.DutchFuzzyOptions options = ...) [static]
     System.Double DefaultThreshold = 0.82
     System.Double DutchSimilarity(System.String value, System.String other, NlFuzzy.DutchFuzzyOptions options = ...) [static]
@@ -95,11 +95,16 @@ public struct NlFuzzy.FuzzyMatch<T>
     System.String ToString()
     System.Void Deconstruct(ref T Value, ref System.String Text, ref System.Double Score, ref System.String PhoneticKey)
     T Value { get; set; }
+public enum NlFuzzy.Indexing.DutchFuzzyIndexSearchMode
+    NlFuzzy.Indexing.DutchFuzzyIndexSearchMode Blocked = 1
+    NlFuzzy.Indexing.DutchFuzzyIndexSearchMode BlockedOnly = 2
+    NlFuzzy.Indexing.DutchFuzzyIndexSearchMode Exact = 0
+    System.Int32 value__
 public sealed class NlFuzzy.Indexing.DutchFuzzyIndex<T>
     .ctor(System.Collections.Generic.IEnumerable<T> items, System.Func<T, System.String> selector, NlFuzzy.DutchFuzzyOptions options = ...)
     NlFuzzy.DutchFuzzyOptions Options { get; }
-    System.Collections.Generic.IReadOnlyList<NlFuzzy.FuzzyMatch<T>> Search(System.String query, System.Double threshold = ..., System.Int32 take = ...)
-    System.Collections.Generic.IReadOnlyList<NlFuzzy.FuzzyMatch<T>> Search(System.String query, System.Double threshold, System.Int32 take, System.Boolean allowFullScan)
+    System.Collections.Generic.IReadOnlyList<NlFuzzy.FuzzyMatch<T>> Search(System.String query, System.Nullable<System.Double> threshold = ..., System.Int32 take = ...)
+    System.Collections.Generic.IReadOnlyList<NlFuzzy.FuzzyMatch<T>> Search(System.String query, System.Nullable<System.Double> threshold, System.Int32 take, NlFuzzy.Indexing.DutchFuzzyIndexSearchMode mode)
     System.Int32 Count { get; }
     System.Int32 PrefixBlockLength = 4
     System.Void Add(T item)

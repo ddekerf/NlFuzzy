@@ -32,10 +32,8 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
             return string.Empty;
         }
 
-        var expanded = ExpandSpecialCharacters(value);
-        var folded = options.RemoveDiacritics ? RemoveDiacritics(expanded) : expanded;
-        var lowered = folded.ToLowerInvariant();
-        var cleaned = KeepLettersAndSpaces(lowered);
+        var folded = FoldForPhonetics(value, options.RemoveDiacritics);
+        var cleaned = KeepLettersAndSpaces(folded);
 
         if (cleaned.Length == 0)
         {
@@ -55,8 +53,30 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
         return cleaned;
     }
 
+    /// <summary>
+    /// Lower-cases, optionally folds diacritics and expands the Dutch and Germanic special
+    /// characters, in the only order that is safe: characters that appear because of lower-casing
+    /// or Unicode decomposition (<c>ẞ</c> -&gt; <c>ß</c>, <c>ǽ</c> -&gt; <c>æ</c>) are still expanded
+    /// instead of being dropped by the later letter filter.
+    /// </summary>
+    /// <param name="value">The text to fold.</param>
+    /// <param name="removeDiacritics">True to strip combining marks.</param>
+    /// <returns>The folded text.</returns>
+    internal static string FoldForPhonetics(string value, bool removeDiacritics = true)
+    {
+        var lowered = value.ToLowerInvariant();
+        var folded = removeDiacritics ? RemoveDiacritics(lowered) : lowered;
+
+        return ExpandSpecialCharacters(folded);
+    }
+
     private static string ExpandSpecialCharacters(string value)
     {
+        if (!NeedsExpansion(value))
+        {
+            return value;
+        }
+
         var builder = new StringBuilder(value.Length + 4);
 
         foreach (var c in value)
@@ -64,6 +84,7 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
             switch (c)
             {
                 case 'ß':
+                case 'ẞ':
                     builder.Append("ss");
                     break;
                 case 'æ':
@@ -93,6 +114,19 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
         }
 
         return builder.ToString();
+    }
+
+    private static bool NeedsExpansion(string value)
+    {
+        foreach (var c in value)
+        {
+            if (c > '\u007f')
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static string RemoveDiacritics(string value)

@@ -6,13 +6,17 @@ on:
   pull_request:
     branches: [ main ]
 
+# Least privilege: deze workflow hoeft de repository alleen te lezen.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: |
             8.0.x
@@ -24,13 +28,65 @@ jobs:
       - name: Build
         run: dotnet build --no-restore --configuration Release
 
+      # De build faalt wanneer de lijndekking onder de afgesproken ondergrens zakt.
       - name: Test
-        run: dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage"
+        run: >
+          dotnet test --no-build --configuration Release
+          /p:CollectCoverage=true
+          /p:CoverletOutputFormat=cobertura
+          /p:Include="[NlFuzzy]*"
+          /p:Threshold=95
+          /p:ThresholdType=line
+          /p:ThresholdStat=total
 
       - name: Pack
         run: dotnet pack src/NlFuzzy/NlFuzzy.csproj --no-build --configuration Release --output ./artifacts
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: nupkg
           path: ./artifacts/*.nupkg
+
+  # Installeert het geproduceerde pakket in een schone net8-app, zodat packaging-regressies
+  # (ontbrekende TFM, README, onbedoelde dependencies) opvallen vóór publicatie.
+  consume-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Pack
+        run: dotnet pack src/NlFuzzy/NlFuzzy.csproj --configuration Release --output ./artifacts
+
+      - name: Consume the package from a clean net8 app
+        run: |
+          set -euo pipefail
+          version=$(grep -oPm1 '(?<=<Version>)[^<]+' src/NlFuzzy/NlFuzzy.csproj)
+          rm -rf /tmp/consumer
+          mkdir -p /tmp/consumer
+          cd /tmp/consumer
+          dotnet new console -f net8.0 -o app
+          cd app
+          cat > Program.cs <<'EOF'
+          using NlFuzzy;
+          using NlFuzzy.Indexing;
+
+          if (!"Meijer".DutchFuzzyEquals("Meier"))
+          {
+              throw new Exception("DutchFuzzyEquals returned false.");
+          }
+
+          var index = new DutchFuzzyIndex<string>(new[] { "Anna Schoenmakers", "Anne Visser" }, x => x);
+
+          if (index.Search("Anne Schoenmakers", 0.82).Count == 0)
+          {
+              throw new Exception("The index returned no match.");
+          }
+
+          Console.WriteLine(DutchFuzzy.PhoneticKey("Vandenbroecke"));
+          EOF
+          dotnet add package NlFuzzy --version "$version" --source "$GITHUB_WORKSPACE/artifacts"
+          dotnet run --configuration Release

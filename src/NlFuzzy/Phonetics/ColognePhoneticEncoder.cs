@@ -72,7 +72,9 @@ public sealed class ColognePhoneticEncoder : IPhoneticEncoder
     }
 
     /// <summary>
-    /// Encodes a single word into its Cologne code. The input is lower-cased before encoding.
+    /// Encodes a single word into its Cologne code. The input is lower-cased and folded first
+    /// (<c>ä</c>, <c>ö</c>, <c>ü</c> and <c>ß</c> are treated as <c>a</c>, <c>o</c>, <c>u</c> and
+    /// <c>ss</c>), exactly like <see cref="Encode"/> does.
     /// </summary>
     /// <param name="word">The word to encode.</param>
     /// <returns>The Cologne code, or an empty string when nothing is left after encoding.</returns>
@@ -84,7 +86,7 @@ public sealed class ColognePhoneticEncoder : IPhoneticEncoder
             throw new ArgumentNullException(nameof(word));
         }
 
-        word = word.ToLowerInvariant();
+        word = Normalization.DutchTextNormalizer.FoldForPhonetics(word);
 
         var raw = new StringBuilder(word.Length + 2);
 

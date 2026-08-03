@@ -39,9 +39,39 @@ public class DutchTextNormalizerTests
     [InlineData("\u0133sbrand", "ijsbrand")]
     [InlineData("\u0132sbrand", "ijsbrand")]
     [InlineData("A\u00f1o", "ano")]
+    [InlineData("STRA\u1E9EE", "strasse")]
+    [InlineData("\u1E9E", "ss")]
+    [InlineData("\u01FDgir", "aegir")]
+    [InlineData("\u01FCGIR", "aegir")]
+    [InlineData("\u01FFslo", "oslo")]
+    [InlineData("Rene\u0301e", "renee")]
+    [InlineData("Zo\u0308ller", "zoller")]
     public void Normalize_CleansInput(string input, string expected)
     {
         Assert.Equal(expected, Normalizer.Normalize(input, Plain));
+    }
+
+    [Theory]
+    [InlineData("Ren\u00e9e", "Rene\u0301e")]
+    [InlineData("Z\u00f6ller", "Zo\u0308ller")]
+    [InlineData("Ge\u00efntegreerd", "Gei\u0308ntegreerd")]
+    public void Normalize_TreatsCanonicallyEquivalentInputTheSame(string composed, string decomposed)
+    {
+        Assert.Equal(
+            Normalizer.Normalize(composed, Plain),
+            Normalizer.Normalize(decomposed, Plain));
+
+        Assert.Equal(DutchFuzzy.PhoneticKey(composed), DutchFuzzy.PhoneticKey(decomposed));
+    }
+
+    [Theory]
+    [InlineData("STRA\u1E9EE", "Strasse")]
+    [InlineData("\u01FDgir", "Aegir")]
+    public void Normalize_ExpandsCharactersThatOnlyAppearAfterFolding(string input, string equivalent)
+    {
+        Assert.Equal(
+            Normalizer.Normalize(equivalent, Plain),
+            Normalizer.Normalize(input, Plain));
     }
 
     [Theory]

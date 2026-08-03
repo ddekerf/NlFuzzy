@@ -4,15 +4,24 @@ using System.Collections.Generic;
 namespace NlFuzzy.Indexing;
 
 /// <summary>
-/// In-memory index that buckets items by phonetic key (blocking), so that a query only has to
-/// be scored against candidates in matching buckets instead of the whole collection.
+/// In-memory index that keeps every item normalized and phonetically encoded, and additionally
+/// buckets items by phonetic key (blocking) so that a query can optionally be scored against
+/// candidates in matching buckets instead of the whole collection.
 /// </summary>
 /// <typeparam name="T">The indexed item type.</typeparam>
 /// <remarks>
 /// Two buckets are maintained per item: one on the full phonetic key and one on the first four
-/// characters of that key. A query scores the union of both buckets. When the union is empty the
-/// index falls back to a full scan, which can be disabled per query.
-/// This type is not thread-safe for concurrent <see cref="Add"/> and <see cref="Search(string, double, int)"/>.
+/// characters of that key.
+/// <para>
+/// Searching defaults to <see cref="DutchFuzzyIndexSearchMode.Exact"/>, which scores every indexed
+/// item against the (already prepared) entries and therefore returns exactly what a linear scan
+/// with <see cref="DutchEnumerableExtensions.FuzzyMatchDutch{T}"/> returns. Blocking is opt-in via
+/// <see cref="DutchFuzzyIndexSearchMode.Blocked"/> and
+/// <see cref="DutchFuzzyIndexSearchMode.BlockedOnly"/>, which are faster but approximate: matches
+/// outside the buckets can be missed even when their score exceeds the threshold.
+/// </para>
+/// This type is not thread-safe for concurrent <see cref="Add"/> and
+/// <see cref="Search(string, double?, int)"/>.
 /// </remarks>
 public sealed class DutchFuzzyIndex<T>
 {
@@ -78,72 +87,117 @@ public sealed class DutchFuzzyIndex<T>
         }
     }
 
-    /// <summary>Searches the index, scoring only the items in matching buckets.</summary>
+    /// <summary>Searches the index.</summary>
     /// <param name="query">The query string.</param>
-    /// <param name="threshold">The minimum score. Defaults to 0.82.</param>
+    /// <param name="threshold">
+    /// The minimum score. Defaults to the <see cref="DutchFuzzyOptions.DefaultThreshold"/> of the
+    /// options this index was built with (0.82 for the default options).
+    /// </param>
     /// <param name="take">The maximum number of results. Use 0 or a negative value for all.</param>
     /// <returns>The matches, ordered by descending score.</returns>
+    /// <remarks>
+    /// This overload uses <see cref="DutchFuzzyIndexSearchMode.Exact"/>, so its result is identical
+    /// to a linear scan with <see cref="DutchEnumerableExtensions.FuzzyMatchDutch{T}"/>. Use the
+    /// overload with an explicit <see cref="DutchFuzzyIndexSearchMode"/> to trade recall for speed.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="threshold"/> is NaN, infinite or outside [0, 1].
+    /// </exception>
     public IReadOnlyList<FuzzyMatch<T>> Search(
         string query,
-        double threshold = DutchStringExtensions.DefaultThreshold,
+        double? threshold = null,
         int take = 10) =>
-        Search(query, threshold, take, allowFullScan: true);
+        Search(query, threshold, take, DutchFuzzyIndexSearchMode.Exact);
 
-    /// <summary>Searches the index, scoring only the items in matching buckets.</summary>
+    /// <summary>Searches the index using an explicit recall/speed trade-off.</summary>
     /// <param name="query">The query string.</param>
-    /// <param name="threshold">The minimum score. Defaults to 0.82.</param>
-    /// <param name="take">The maximum number of results. Use 0 or a negative value for all.</param>
-    /// <param name="allowFullScan">
-    /// When true (the default) and no bucket matches, every indexed item is scored. Set to false to
-    /// return an empty result instead, which keeps the worst case cheap on very large indexes.
+    /// <param name="threshold">
+    /// The minimum score. Defaults to the <see cref="DutchFuzzyOptions.DefaultThreshold"/> of the
+    /// options this index was built with when null is passed.
     /// </param>
+    /// <param name="take">The maximum number of results. Use 0 or a negative value for all.</param>
+    /// <param name="mode">The search mode. See <see cref="DutchFuzzyIndexSearchMode"/>.</param>
     /// <returns>The matches, ordered by descending score.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
-    public IReadOnlyList<FuzzyMatch<T>> Search(string query, double threshold, int take, bool allowFullScan)
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="threshold"/> is NaN, infinite or outside [0, 1], or when
+    /// <paramref name="mode"/> is not a defined enum value.
+    /// </exception>
+    public IReadOnlyList<FuzzyMatch<T>> Search(
+        string query,
+        double? threshold,
+        int take,
+        DutchFuzzyIndexSearchMode mode)
     {
         if (query is null)
         {
             throw new ArgumentNullException(nameof(query));
         }
 
-        var prepared = _scorer.Prepare(query);
-        var key = prepared.Key;
-        var candidates = CollectCandidates(key);
-
-        if (candidates.Count == 0)
+        if (!EnumCompat.IsDefined(mode))
         {
-            if (!allowFullScan)
-            {
-                return Array.Empty<FuzzyMatch<T>>();
-            }
-
-            for (var i = 0; i < _entries.Count; i++)
-            {
-                candidates.Add(i);
-            }
+            throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown search mode.");
         }
 
-        var matches = new List<FuzzyMatch<T>>();
+        var minimumScore = Thresholds.Resolve(threshold, _options, nameof(threshold));
+        var prepared = _scorer.Prepare(query);
+        var matches = new TopMatchCollector<T>(take);
+
+        if (mode == DutchFuzzyIndexSearchMode.Exact)
+        {
+            ScoreRange(prepared, minimumScore, matches, skip: null);
+
+            return matches.ToSortedList();
+        }
+
+        var candidates = CollectCandidates(prepared.Key);
 
         foreach (var position in candidates)
         {
-            var entry = _entries[position];
-            var score = _scorer.Score(prepared, entry.Prepared);
-
-            if (score >= threshold)
-            {
-                matches.Add(new FuzzyMatch<T>(entry.Item, entry.Text, score, entry.Key));
-            }
+            ScoreEntry(position, prepared, minimumScore, matches);
         }
 
-        matches.Sort(DutchEnumerableExtensions.CompareByScoreDescending);
-
-        if (take > 0 && matches.Count > take)
+        if (mode == DutchFuzzyIndexSearchMode.Blocked && NeedsFullScan(matches.Count, take))
         {
-            matches.RemoveRange(take, matches.Count - take);
+            ScoreRange(prepared, minimumScore, matches, candidates);
         }
 
-        return matches;
+        return matches.ToSortedList();
+    }
+
+    private static bool NeedsFullScan(int found, int take) => take > 0 ? found < take : found == 0;
+
+    private void ScoreRange(
+        Comparison.DutchFuzzyScorer.PreparedText query,
+        double minimumScore,
+        TopMatchCollector<T> matches,
+        HashSet<int>? skip)
+    {
+        for (var position = 0; position < _entries.Count; position++)
+        {
+            if (skip is not null && skip.Contains(position))
+            {
+                continue;
+            }
+
+            ScoreEntry(position, query, minimumScore, matches);
+        }
+    }
+
+    private void ScoreEntry(
+        int position,
+        Comparison.DutchFuzzyScorer.PreparedText query,
+        double minimumScore,
+        TopMatchCollector<T> matches)
+    {
+        var entry = _entries[position];
+        var score = _scorer.Score(query, entry.Prepared);
+
+        if (score >= minimumScore)
+        {
+            matches.Add(new FuzzyMatch<T>(entry.Item, entry.Text, score, entry.Key));
+        }
     }
 
     private HashSet<int> CollectCandidates(string key)

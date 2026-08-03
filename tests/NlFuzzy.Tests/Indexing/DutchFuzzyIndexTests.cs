@@ -91,7 +91,7 @@ public class DutchFuzzyIndexTests
     {
         var index = CreateIndex();
 
-        var bucketed = index.Search("Jan Meyer", 0.5, 10, allowFullScan: false);
+        var bucketed = index.Search("Jan Meyer", 0.5, 10, DutchFuzzyIndexSearchMode.BlockedOnly);
 
         Assert.All(bucketed, m => Assert.InRange(m.Score, 0.5, 1d));
     }
@@ -126,5 +126,143 @@ public class DutchFuzzyIndexTests
         var results = index.Search("Van den Broecke", 0.8, take: 5);
 
         Assert.Contains(results, r => r.Value.Id == 999_999);
+    }
+
+    [Fact]
+    public void Search_FindsMatchesOutsideTheBuckets()
+    {
+        // Regression: a single, irrelevant bucket candidate used to suppress every match outside
+        // the buckets, so this query returned nothing at all.
+        var index = new DutchFuzzyIndex<string>(
+            ["Anna Schoenmakers", "Anne Visser"],
+            static value => value);
+
+        var results = index.Search("Anne Schoenmakers", 0.82);
+
+        Assert.Contains(results, r => r.Value == "Anna Schoenmakers");
+    }
+
+    [Fact]
+    public void Search_BlockedFallsBackToAFullScanWhenTheBucketsAreTooSmall()
+    {
+        var index = new DutchFuzzyIndex<string>(
+            ["Anna Schoenmakers", "Anne Visser"],
+            static value => value);
+
+        var blocked = index.Search("Anne Schoenmakers", 0.82, 10, DutchFuzzyIndexSearchMode.Blocked);
+
+        Assert.Contains(blocked, r => r.Value == "Anna Schoenmakers");
+    }
+
+    [Fact]
+    public void Search_BlockedOnlyIsDocumentedAsApproximate()
+    {
+        var index = new DutchFuzzyIndex<string>(
+            ["Anna Schoenmakers", "Anne Visser"],
+            static value => value);
+
+        var exact = index.Search("Anne Schoenmakers", 0.82, 10, DutchFuzzyIndexSearchMode.Exact);
+        var blockedOnly = index.Search("Anne Schoenmakers", 0.82, 10, DutchFuzzyIndexSearchMode.BlockedOnly);
+
+        Assert.Contains(exact, r => r.Value == "Anna Schoenmakers");
+        Assert.True(blockedOnly.Count <= exact.Count);
+    }
+
+    [Theory]
+    [InlineData(0.5, 0)]
+    [InlineData(0.5, 3)]
+    [InlineData(0.7, 5)]
+    [InlineData(0.9, 10)]
+    public void Search_ExactIsIdenticalToALinearScanOnAdversarialData(double threshold, int take)
+    {
+        var items = BuildAdversarialDataset();
+        var index = new DutchFuzzyIndex<Customer>(items, c => c.Name, DutchFuzzyOptions.Names);
+
+        foreach (var query in Queries)
+        {
+            var indexed = index.Search(query, threshold, take)
+                .Select(m => (m.Value.Id, Score: Math.Round(m.Score, 12)))
+                .ToList();
+
+            var linear = items
+                .FuzzyMatchDutch(query, c => c.Name, threshold, take, DutchFuzzyOptions.Names)
+                .Select(m => (m.Value.Id, Score: Math.Round(m.Score, 12)))
+                .ToList();
+
+            Assert.Equal(linear, indexed);
+        }
+    }
+
+    [Fact]
+    public void Search_TakeReturnsThePrefixOfTheCompleteRanking()
+    {
+        var items = BuildAdversarialDataset();
+        var index = new DutchFuzzyIndex<Customer>(items, c => c.Name, DutchFuzzyOptions.Names);
+
+        foreach (var query in Queries)
+        {
+            var all = index.Search(query, 0.4, take: 0)
+                .Select(m => Math.Round(m.Score, 12))
+                .Take(4)
+                .ToList();
+
+            var top = index.Search(query, 0.4, take: 4)
+                .Select(m => Math.Round(m.Score, 12))
+                .ToList();
+
+            Assert.Equal(all, top);
+        }
+    }
+
+    [Fact]
+    public void Search_RejectsUnknownModes()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => CreateIndex().Search("Jan", 0.5, 10, (DutchFuzzyIndexSearchMode)42));
+    }
+
+    [Fact]
+    public void Search_UsesTheDefaultThresholdOfItsOptions()
+    {
+        var loose = DutchFuzzyOptions.Names with { DefaultThreshold = 0.1 };
+        var strict = DutchFuzzyOptions.Names with { DefaultThreshold = 0.999 };
+
+        Assert.NotEmpty(new DutchFuzzyIndex<Customer>(Customers, c => c.Name, loose).Search("Jan Meyer"));
+        Assert.Empty(new DutchFuzzyIndex<Customer>(Customers, c => c.Name, strict).Search("Jan Meyer"));
+    }
+
+    private static readonly string[] Queries =
+    [
+        "Anne Schoenmakers",
+        "Jan Meyer",
+        "Vandenbroecke",
+        "Klaas Fisser",
+        "Zzyzx Qqq",
+        "Bakkers",
+        "de Bruyn",
+        string.Empty,
+    ];
+
+    private static List<Customer> BuildAdversarialDataset()
+    {
+        var firstNames = new[] { "Anna", "Anne", "Jan", "Johan", "Klaas", "Piet", "Marieke", "Sanne" };
+        var lastNames = new[]
+        {
+            "Schoenmakers", "Schoonmakers", "Visser", "Fisser", "Meijer", "Meier", "Bakker",
+            "Bakkers", "Vandenbroecke", "Van den Broeke", "de Bruijn", "Bruyn", "Kuiper", "Kuipers",
+        };
+
+        var random = new Random(20260731);
+        var items = new List<Customer>();
+
+        for (var i = 0; i < 400; i++)
+        {
+            var first = firstNames[random.Next(firstNames.Length)];
+            var last = lastNames[random.Next(lastNames.Length)];
+
+            items.Add(new Customer(i, $"{first} {last}"));
+        }
+
+        return items;
     }
 }

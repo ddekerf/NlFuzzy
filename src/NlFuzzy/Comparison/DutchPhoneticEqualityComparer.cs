@@ -8,7 +8,7 @@ namespace NlFuzzy.Comparison;
 /// because key equality is reflexive, symmetric and transitive.
 /// </summary>
 /// <remarks>
-/// <see cref="DutchStringExtensions.DutchFuzzyEquals(string, string, double, DutchFuzzyOptions)"/>
+/// <see cref="DutchStringExtensions.DutchFuzzyEquals(string, string, double?, DutchFuzzyOptions)"/>
 /// deliberately does <b>not</b> get an <see cref="IEqualityComparer{T}"/>: a threshold-based
 /// comparison is not transitive and would corrupt hash-based collections.
 /// </remarks>

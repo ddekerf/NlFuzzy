@@ -217,7 +217,7 @@ public class ReadmeExamplesTests
     {
         var index = new DutchFuzzyIndex<string>(["Kuipers", "Bakker"], x => x, DutchFuzzyOptions.Names);
 
-        Assert.Empty(index.Search("Zzyzx", 0.9, 10, allowFullScan: false));
+        Assert.Empty(index.Search("Zzyzx", 0.9, 10, DutchFuzzyIndexSearchMode.BlockedOnly));
     }
 
     [Fact]

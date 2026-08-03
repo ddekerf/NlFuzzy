@@ -73,8 +73,12 @@ public sealed record DutchFuzzyOptions
     /// <summary>Score floor applied when both phonetic keys are identical. Default: 0.90.</summary>
     public double IdenticalKeyFloor { get; init; } = 0.90;
 
-    /// <summary>Default threshold used by <c>DutchFuzzyEquals</c> and search helpers. Default: 0.82.</summary>
-    public double DefaultThreshold { get; init; } = 0.82;
+    /// <summary>
+    /// Threshold used by <c>DutchFuzzyEquals</c>, the ranking helpers and
+    /// <see cref="Indexing.DutchFuzzyIndex{T}"/> whenever the caller omits the threshold argument.
+    /// Default: 0.82.
+    /// </summary>
+    public double DefaultThreshold { get; init; } = DutchStringExtensions.DefaultThreshold;
 
     /// <summary>
     /// Relative score penalty applied when the first phoneme of both keys differs. Default: 0.20.
@@ -93,20 +97,29 @@ public sealed record DutchFuzzyOptions
 
     /// <summary>Validates that weights are non-negative and sum to a positive value.</summary>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when a weight is negative, when all weights are zero, when a penalty falls outside
-    /// [0, 1), when a threshold or floor falls outside [0, 1], or when <see cref="MaxKeyLength"/> is negative.
+    /// Thrown when a weight is negative or not finite, when the weights do not sum to a finite
+    /// positive value, when a penalty falls outside [0, 1), when a threshold or floor falls outside
+    /// [0, 1], when <see cref="Profile"/> is not a defined enum value, or when
+    /// <see cref="MaxKeyLength"/> is negative.
     /// </exception>
     public void Validate()
     {
+        if (!EnumCompat.IsDefined(Profile))
+        {
+            throw new InvalidOperationException(
+                "Profile must be a defined DutchPhoneticProfile value (Strict or Tolerant).");
+        }
+
         EnsureNonNegative(OrthographicWeight, nameof(OrthographicWeight));
         EnsureNonNegative(PhoneticWeight, nameof(PhoneticWeight));
         EnsureNonNegative(NGramWeight, nameof(NGramWeight));
 
         var total = OrthographicWeight + PhoneticWeight + NGramWeight;
 
-        if (total <= 0d)
+        if (!MathCompat.IsFinite(total) || total <= 0d)
         {
-            throw new InvalidOperationException("The sum of the similarity weights must be greater than zero.");
+            throw new InvalidOperationException(
+                "The sum of the similarity weights must be a finite number greater than zero.");
         }
 
         EnsureUnitInterval(IdenticalKeyFloor, nameof(IdenticalKeyFloor));
@@ -122,15 +135,15 @@ public sealed record DutchFuzzyOptions
 
     private static void EnsureNonNegative(double value, string name)
     {
-        if (double.IsNaN(value) || value < 0d)
+        if (!MathCompat.IsFinite(value) || value < 0d)
         {
-            throw new InvalidOperationException(name + " must be a non-negative number.");
+            throw new InvalidOperationException(name + " must be a finite, non-negative number.");
         }
     }
 
     private static void EnsureUnitInterval(double value, string name)
     {
-        if (double.IsNaN(value) || value < 0d || value > 1d)
+        if (!MathCompat.IsFinite(value) || value < 0d || value > 1d)
         {
             throw new InvalidOperationException(name + " must lie in the closed interval [0, 1].");
         }
@@ -138,7 +151,7 @@ public sealed record DutchFuzzyOptions
 
     private static void EnsureFraction(double value, string name)
     {
-        if (double.IsNaN(value) || value < 0d || value >= 1d)
+        if (!MathCompat.IsFinite(value) || value < 0d || value >= 1d)
         {
             throw new InvalidOperationException(name + " must lie in the half-open interval [0, 1).");
         }

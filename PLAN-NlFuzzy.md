@@ -94,9 +94,13 @@ blijft — belangrijk gezien het grote aantal Nederlandse dialecten. Zijn voorbe
 (vrede/wrede, luycks/luiks, Vandenbroecke/Vandenberghe, sjamaan/china/shampoo) zijn
 bruikbaar als testmateriaal. De volledige T-SQL-broncode staat in het artikel.
 
-Uit die regelset overnemen we onder meer: `b` finaal wordt `p`, `d` finaal wordt `t`,
+Uit die regelset nemen we alleen de *taalkundige regels* over — feitelijke Nederlandse
+spelling-klankcorrespondenties, geen broncode. Concreet: `b` finaal wordt `p`, `d` finaal wordt `t`,
 `ch` wordt `x` initieel en `g` intern, `c` voor e/i/y wordt `s`, `ph` wordt `f`,
 `s` voor h/j wordt `x`, `ti` + klinker wordt `s`, `x` wordt `ks`, `qu`/`q` wordt `k`.
+De T-SQL-broncode uit het artikel is niet overgenomen, vertaald of geport; de encoder hier is een
+eigen, tabelgedreven implementatie. Zie [PROVENANCE.md](PROVENANCE.md) voor de volledige
+verantwoording en de openstaande actie rond schriftelijke bevestiging van hergebruik.
 
 **Dutch Soundex-varianten in de praktijk.** Er circuleren aangepaste Soundex-versies
 waarbij de lettergroepen anders zijn ingedeeld omwille van het verschil tussen de
