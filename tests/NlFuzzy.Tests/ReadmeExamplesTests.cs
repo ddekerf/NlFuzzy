@@ -79,6 +79,27 @@ public class ReadmeExamplesTests
     }
 
     [Fact]
+    public void Voorbeeld_3_7_AchternaamVoornaam()
+    {
+        double score = "Jan Bakker".DutchSimilarity("Bakker, Jan", DutchFuzzyOptions.Names);
+        bool zelfde = "Jan Kuipers".DutchFuzzyEquals("Cuypers, Jan", options: DutchFuzzyOptions.Names);
+
+        var strikt = DutchFuzzyOptions.Names with { IgnoreTokenOrder = false };
+        double volgordeTelt = "Jan Bakker".DutchSimilarity("Bakker, Jan", strikt);
+
+        Assert.Equal(0.97, score, 2);
+        Assert.True(zelfde);
+        Assert.Equal(0.29, volgordeTelt, 2);
+        Assert.Equal(1d, "Jan Bakker".DutchSimilarity("Jan Bakker", DutchFuzzyOptions.Names), 10);
+    }
+
+    [Fact]
+    public void Sectie6_SleutelsBlijvenVolgordegevoelig()
+    {
+        Assert.False("Jan Bakker".SoundsLikeDutch("Bakker, Jan", DutchFuzzyOptions.Names));
+    }
+
+    [Fact]
     public void Voorbeeld_Bonus_Ontdubbelen()
     {
         var uniek = new HashSet<string>(
@@ -169,16 +190,19 @@ public class ReadmeExamplesTests
         Assert.False(DutchFuzzyOptions.Default.EncodeVowels);
         Assert.True(DutchFuzzyOptions.Default.StripNamePrefixes);
         Assert.False(DutchFuzzyOptions.Default.SplitGluedNamePrefixes);
+        Assert.True(DutchFuzzyOptions.Default.IgnoreTokenOrder);
 
         Assert.Equal(DutchPhoneticProfile.Tolerant, DutchFuzzyOptions.Names.Profile);
         Assert.True(DutchFuzzyOptions.Names.EncodeVowels);
         Assert.True(DutchFuzzyOptions.Names.StripNamePrefixes);
         Assert.True(DutchFuzzyOptions.Names.SplitGluedNamePrefixes);
+        Assert.True(DutchFuzzyOptions.Names.IgnoreTokenOrder);
 
         Assert.Equal(DutchPhoneticProfile.Strict, DutchFuzzyOptions.Words.Profile);
         Assert.True(DutchFuzzyOptions.Words.EncodeVowels);
         Assert.False(DutchFuzzyOptions.Words.StripNamePrefixes);
         Assert.False(DutchFuzzyOptions.Words.SplitGluedNamePrefixes);
+        Assert.False(DutchFuzzyOptions.Words.IgnoreTokenOrder);
     }
 
     [Fact]

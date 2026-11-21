@@ -113,6 +113,24 @@ bool zelfde = "Meijer".DutchFuzzyEquals("Meier", threshold: null, streng); // ge
 Een drempel moet een eindig getal in `[0, 1]` zijn; `NaN`, oneindig en waarden erbuiten leveren een
 `ArgumentOutOfRangeException` op in plaats van een stil verkeerd resultaat.
 
+### 3.7 Achternaam, Voornaam
+
+Klantenbestanden zetten de achternaam vaak eerst. De score negeert standaard de volgorde van de
+woorden, zodat dezelfde persoon in een andere volgorde toch als (bijna) gelijk geldt:
+
+```csharp
+using NlFuzzy;
+
+double score = "Jan Bakker".DutchSimilarity("Bakker, Jan", DutchFuzzyOptions.Names);   // ~0.97
+bool zelfde = "Jan Kuipers".DutchFuzzyEquals("Cuypers, Jan", options: DutchFuzzyOptions.Names); // true
+
+var strikt = DutchFuzzyOptions.Names with { IgnoreTokenOrder = false };
+double volgordeTelt = "Jan Bakker".DutchSimilarity("Bakker, Jan", strikt);              // ~0.29
+```
+
+Een identieke invoer scoort 1.0 en een omgedraaide 0.97, zodat de exacte volgorde bij het
+rangschikken voorrang krijgt. De preset `Words` laat de volgorde wél meetellen.
+
 ### Bonus: ontdubbelen met de equality comparer
 
 ```csharp
@@ -187,11 +205,11 @@ Scores voor dezelfde paren:
 
 ### De drie presets
 
-| Preset | Profiel | `EncodeVowels` | `StripNamePrefixes` | `SplitGluedNamePrefixes` | Waarvoor |
-|---|---|---|---|---|---|
-| `DutchFuzzyOptions.Default` | Tolerant | nee | ja | nee | algemeen, hoge recall |
-| `DutchFuzzyOptions.Names` | Tolerant | ja | ja | ja | persoonsnamen, ook Vlaamse aaneengeschreven tussenvoegsels |
-| `DutchFuzzyOptions.Words` | Strict | ja | nee | nee | gewone woorden in plaats van namen |
+| Preset | Profiel | `EncodeVowels` | `StripNamePrefixes` | `SplitGluedNamePrefixes` | `IgnoreTokenOrder` | Waarvoor |
+|---|---|---|---|---|---|---|
+| `DutchFuzzyOptions.Default` | Tolerant | nee | ja | nee | ja | algemeen, hoge recall |
+| `DutchFuzzyOptions.Names` | Tolerant | ja | ja | ja | ja | persoonsnamen, ook Vlaamse aaneengeschreven tussenvoegsels |
+| `DutchFuzzyOptions.Words` | Strict | ja | nee | nee | nee | gewone woorden in plaats van namen |
 
 `Names` is de preset waartegen de gouden dataset gevalideerd is. Het verschil is groot bij
 aaneengeschreven tussenvoegsels:
@@ -244,6 +262,12 @@ Zet ze op `0` om het klassieke gedrag terug te krijgen.
   fonetisch dicht bij elkaar, en de score is dan nauwelijks informatief. Verhoog de drempel of
   vergelijk zulke velden exact.
 - **Cijfers en leestekens** worden weggegooid; huisnummers en initialen dragen niets bij.
+- **Woordvolgorde telt alleen niet mee in de score.** `IgnoreTokenOrder` maakt `Similarity`,
+  `DutchFuzzyEquals`, `FuzzyMatchDutch` en de index ongevoelig voor de volgorde, maar de fonetische
+  sleutel blijft volgordegevoelig: `PhoneticKey`, `SoundsLike` en
+  `DutchPhoneticEqualityComparer` zien `Jan Bakker` en `Bakker, Jan` als verschillend. Ook
+  gedeeltelijke namen (`Bakker` tegenover `Jan Bakker`) en initialen (`J. Bakker`) worden niet
+  speciaal behandeld.
 - **De zoekmodus van de index.** `DutchFuzzyIndex.Search` staat standaard op
   `DutchFuzzyIndexSearchMode.Exact`: elk item wordt gescoord (met hergebruikte, voorbewerkte
   sleutels), zodat het resultaat identiek is aan een lineaire scan. `Blocked` scoort eerst de

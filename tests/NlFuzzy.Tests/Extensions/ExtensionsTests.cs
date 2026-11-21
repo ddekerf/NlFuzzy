@@ -181,4 +181,18 @@ public class DutchEnumerableExtensionsTests
         Assert.Equal(5, top5.Count);
         Assert.Equal(expected, top5.Select(m => Math.Round(m.Score, 12)));
     }
+
+    [Fact]
+    public void FuzzyMatchDutch_RanksTheExactOrderAboveAReorderedName()
+    {
+        var matches = new[] { "Bakker Jan", "Jan Bakker" }
+            .FuzzyMatchDutch("Jan Bakker", take: 0, options: DutchFuzzyOptions.Names)
+            .ToList();
+
+        Assert.Equal(2, matches.Count);
+        Assert.Equal("Jan Bakker", matches[0].Text);
+        Assert.Equal(1d, matches[0].Score, 10);
+        Assert.Equal("Bakker Jan", matches[1].Text);
+        Assert.InRange(matches[1].Score, 0.95, 0.999);
+    }
 }

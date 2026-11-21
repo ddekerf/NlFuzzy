@@ -81,6 +81,23 @@ public sealed class DutchPhoneticEncoder : IPhoneticEncoder
         return results;
     }
 
+    /// <summary>
+    /// Encodes every token of already normalized text and returns one key per token, in token
+    /// order, including empty keys for tokens that encode to nothing. The result is aligned with
+    /// <paramref name="tokens"/>, which <see cref="EncodeNormalizedTokens"/> does not guarantee.
+    /// </summary>
+    internal string[] EncodeAlignedTokens(string[] tokens)
+    {
+        var keys = new string[tokens.Length];
+
+        for (var i = 0; i < tokens.Length; i++)
+        {
+            keys[i] = EncodeToken(tokens[i], null);
+        }
+
+        return keys;
+    }
+
     internal string EncodeNormalized(string normalized)
     {
         var tokens = EncodeNormalizedTokens(normalized, null);

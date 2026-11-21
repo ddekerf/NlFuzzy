@@ -118,8 +118,8 @@ public sealed class JaroWinklerSimilarity : IStringSimilarity
             matchWindow = 0;
         }
 
-        var aMatched = new bool[a.Length];
-        var bMatched = new bool[b.Length];
+        var aMatched = ScratchBuffers.Flags(0, a.Length);
+        var bMatched = ScratchBuffers.Flags(1, b.Length);
         var matches = 0;
 
         for (var i = 0; i < a.Length; i++)

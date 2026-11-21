@@ -11,7 +11,9 @@ namespace NlFuzzy.Indexing;
 /// <typeparam name="T">The indexed item type.</typeparam>
 /// <remarks>
 /// Two buckets are maintained per item: one on the full phonetic key and one on the first four
-/// characters of that key.
+/// characters of that key. When <see cref="DutchFuzzyOptions.IgnoreTokenOrder"/> is enabled, items
+/// with several tokens are also bucketed on their token-order-independent key, so the blocked modes
+/// find "Bakker, Jan" for "Jan Bakker".
 /// <para>
 /// Searching defaults to <see cref="DutchFuzzyIndexSearchMode.Exact"/>, which scores every indexed
 /// item against the (already prepared) entries and therefore returns exactly what a linear scan
@@ -30,6 +32,7 @@ public sealed class DutchFuzzyIndex<T>
 
     private readonly Dictionary<string, List<int>> _byKey = new(StringComparer.Ordinal);
     private readonly Dictionary<string, List<int>> _byPrefix = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, List<int>> _byCanonicalKey = new(StringComparer.Ordinal);
     private readonly List<Entry> _entries = new();
     private readonly Func<T, string> _selector;
     private readonly DutchFuzzyOptions _options;
@@ -84,6 +87,11 @@ public sealed class DutchFuzzyIndex<T>
         else if (key.Length > 0)
         {
             AddTo(_byPrefix, key, position);
+        }
+
+        if (prepared.CanonicalKey is { Length: > 0 } canonical)
+        {
+            AddTo(_byCanonicalKey, canonical, position);
         }
     }
 
@@ -151,7 +159,7 @@ public sealed class DutchFuzzyIndex<T>
             return matches.ToSortedList();
         }
 
-        var candidates = CollectCandidates(prepared.Key);
+        var candidates = CollectCandidates(prepared);
 
         foreach (var position in candidates)
         {
@@ -200,9 +208,10 @@ public sealed class DutchFuzzyIndex<T>
         }
     }
 
-    private HashSet<int> CollectCandidates(string key)
+    private HashSet<int> CollectCandidates(Comparison.DutchFuzzyScorer.PreparedText query)
     {
         var candidates = new HashSet<int>();
+        var key = query.Key;
 
         if (key.Length == 0)
         {
@@ -219,6 +228,12 @@ public sealed class DutchFuzzyIndex<T>
         if (_byPrefix.TryGetValue(prefix, out var blocked))
         {
             candidates.UnionWith(blocked);
+        }
+
+        if (query.CanonicalKey is { Length: > 0 } canonical
+            && _byCanonicalKey.TryGetValue(canonical, out var reordered))
+        {
+            candidates.UnionWith(reordered);
         }
 
         return candidates;

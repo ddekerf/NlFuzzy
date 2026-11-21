@@ -31,7 +31,8 @@ public sealed record DutchFuzzyOptions
         Profile = DutchPhoneticProfile.Strict,
         StripNamePrefixes = false,
         SplitGluedNamePrefixes = false,
-        EncodeVowels = true
+        EncodeVowels = true,
+        IgnoreTokenOrder = false
     };
 
     /// <summary>Phonetic profile. Default: <see cref="DutchPhoneticProfile.Tolerant"/>.</summary>
@@ -57,6 +58,13 @@ public sealed record DutchFuzzyOptions
     /// True gives longer, more selective keys.
     /// </summary>
     public bool EncodeVowels { get; init; }
+
+    /// <summary>
+    /// Let the similarity score tolerate a different token order, so that "Jan Bakker" and
+    /// "Bakker, Jan" score as a near match. Identical input still scores higher than reordered
+    /// input. Phonetic keys are not affected. Default: true (false in <see cref="Words"/>).
+    /// </summary>
+    public bool IgnoreTokenOrder { get; init; } = true;
 
     /// <summary>Maximum length of the produced phonetic key. 0 = unlimited. Default: 0.</summary>
     public int MaxKeyLength { get; init; }

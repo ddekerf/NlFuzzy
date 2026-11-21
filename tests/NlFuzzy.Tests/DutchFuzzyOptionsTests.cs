@@ -15,6 +15,7 @@ public class DutchFuzzyOptionsTests
         Assert.True(options.RemoveDiacritics);
         Assert.True(options.StripNamePrefixes);
         Assert.Equal(0, options.MaxKeyLength);
+        Assert.True(options.IgnoreTokenOrder);
         Assert.Equal(0.45, options.PhoneticWeight, 10);
         Assert.Equal(0.35, options.OrthographicWeight, 10);
         Assert.Equal(0.20, options.NGramWeight, 10);
@@ -34,6 +35,7 @@ public class DutchFuzzyOptionsTests
         Assert.True(options.EncodeVowels);
         Assert.True(options.StripNamePrefixes);
         Assert.True(options.SplitGluedNamePrefixes);
+        Assert.True(options.IgnoreTokenOrder);
     }
 
     [Fact]
@@ -45,6 +47,7 @@ public class DutchFuzzyOptionsTests
         Assert.True(options.EncodeVowels);
         Assert.False(options.StripNamePrefixes);
         Assert.False(options.SplitGluedNamePrefixes);
+        Assert.False(options.IgnoreTokenOrder);
     }
 
     [Fact]

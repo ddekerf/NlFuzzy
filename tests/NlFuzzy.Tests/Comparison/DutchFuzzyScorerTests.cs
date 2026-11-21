@@ -117,4 +117,85 @@ public class DutchFuzzyScorerTests
     {
         Assert.Same(DutchFuzzyOptions.Default, DutchFuzzyScorer.Default.Options);
     }
+
+    [Theory]
+    [InlineData("Jan Bakker", "Bakker, Jan")]
+    [InlineData("Jan Bakker", "Bakker Jan")]
+    public void TokenOrder_ReorderedNamesScoreAsANearMatch(string a, string b)
+    {
+        var score = Names.Score(a, b);
+
+        Assert.True(score >= 0.95, $"{a}/{b} scored {score}.");
+        Assert.True(score < 1d, $"{a}/{b} scored {score}; reordered input must rank below identical input.");
+    }
+
+    [Fact]
+    public void TokenOrder_ReorderedNameWithAParticleScoresAsANearMatch()
+    {
+        var score = DutchFuzzyScorer.Default.Score("Piet de Vries", "de Vries, Piet");
+
+        Assert.True(score >= 0.95, $"Scored {score}.");
+    }
+
+    [Fact]
+    public void TokenOrder_ReorderingCombinesWithSpellingVariants()
+    {
+        var score = Names.Score("Jan Kuipers", "Cuypers, Jan");
+
+        Assert.True(score >= DutchStringExtensions.DefaultThreshold, $"Scored {score}.");
+    }
+
+    [Fact]
+    public void TokenOrder_WordsPresetKeepsTheOriginalOrder()
+    {
+        var words = new DutchFuzzyScorer(DutchFuzzyOptions.Words);
+        var ordered = new DutchFuzzyScorer(DutchFuzzyOptions.Words with { IgnoreTokenOrder = false });
+
+        Assert.Equal(ordered.Score("Jan Bakker", "Bakker Jan"), words.Score("Jan Bakker", "Bakker Jan"), 10);
+        Assert.True(words.Score("Jan Bakker", "Bakker Jan") < 0.5);
+    }
+
+    [Theory]
+    [InlineData("Meijer", "Meier")]
+    [InlineData("Jansen", "Hansen")]
+    [InlineData("Kuipers", "Kuiper")]
+    [InlineData("Bakker", "Jan Bakker")]
+    public void TokenOrder_DoesNotChangeScoresUnlessBothSidesHaveSeveralTokens(string a, string b)
+    {
+        var tolerant = new DutchFuzzyScorer(DutchFuzzyOptions.Names);
+        var ordered = new DutchFuzzyScorer(DutchFuzzyOptions.Names with { IgnoreTokenOrder = false });
+
+        Assert.Equal(ordered.Score(a, b), tolerant.Score(a, b), 10);
+    }
+
+    [Fact]
+    public void TokenOrder_DoesNotChangePhoneticKeys()
+    {
+        var ordered = DutchFuzzyOptions.Names with { IgnoreTokenOrder = false };
+
+        Assert.Equal(
+            DutchFuzzy.PhoneticKey("Bakker, Jan", ordered),
+            DutchFuzzy.PhoneticKey("Bakker, Jan", DutchFuzzyOptions.Names));
+    }
+
+    [Fact]
+    public void Prepare_BuildsTheSameCanonicalFormForReorderedTokens()
+    {
+        var first = Names.Prepare("bakker jan");
+        var second = Names.Prepare("jan bakker");
+
+        Assert.NotNull(first.CanonicalNormalized);
+        Assert.Equal(first.CanonicalNormalized, second.CanonicalNormalized);
+        Assert.Equal(first.CanonicalKey, second.CanonicalKey);
+        Assert.NotEqual(first.Key, second.Key);
+    }
+
+    [Fact]
+    public void Prepare_SkipsTheCanonicalFormForSingleTokensAndWhenDisabled()
+    {
+        var ordered = new DutchFuzzyScorer(DutchFuzzyOptions.Names with { IgnoreTokenOrder = false });
+
+        Assert.Null(Names.Prepare("bakker").CanonicalNormalized);
+        Assert.Null(ordered.Prepare("jan bakker").CanonicalNormalized);
+    }
 }

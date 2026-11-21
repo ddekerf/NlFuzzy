@@ -54,6 +54,15 @@ eerste publicatie op nuget.org.
 - **Ranking gebruikt een begrensde top-k-heap.** Bij een positieve `take` bewaren
   `FuzzyMatchDutch` en `DutchFuzzyIndex<T>.Search` niet langer alle kwalificerende treffers om die
   volledig te sorteren; het geheugengebruik is nu `O(take)` in plaats van `O(n)`.
+- **De score negeert de woordvolgorde.** Nieuwe optie `DutchFuzzyOptions.IgnoreTokenOrder`, standaard
+  `true` in `Default` en `Names` en `false` in `Words`. `Jan Bakker` tegenover `Bakker, Jan` scoorde
+  0.29 en scoort nu 0.97; een identieke invoer blijft 1.0 scoren en rangschikt dus hoger. Dit geldt
+  voor `Similarity`, `AreEquivalent`/`DutchFuzzyEquals`, `FuzzyMatchDutch`, `BestDutchMatch` en
+  `DutchFuzzyIndex<T>`, die in `Blocked`- en `BlockedOnly`-modus nu ook een blok op de
+  volgorde-onafhankelijke sleutel bijhoudt. Scores voor invoer met meerdere woorden kunnen alleen
+  stijgen, dus met een afgestelde drempel kun je extra treffers krijgen; zet
+  `IgnoreTokenOrder = false` voor het oude gedrag. Fonetische sleutels, `SoundsLike` en
+  `DutchPhoneticEqualityComparer` veranderen niet. (Score-wijziging, geen sleutelwijziging: minor.)
 
 ### Opgelost
 
