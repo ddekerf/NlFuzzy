@@ -21,8 +21,8 @@ public class DutchTextNormalizerTests
     [InlineData("Jan   Willem", "jan willem")]
     [InlineData("Sint-Niklaas", "sint niklaas")]
     [InlineData("Bergen op Zoom", "bergen op zoom")]
-    [InlineData("D'Hondt", "de hondt")]
-    [InlineData("D\u2019Hondt", "de hondt")]
+    [InlineData("D'Hondt", "d hondt")]
+    [InlineData("D\u2019Hondt", "d hondt")]
     [InlineData("O'Brien", "o brien")]
     [InlineData("Jan, Willem", "jan willem")]
     [InlineData("A.J. Kuipers", "a j kuipers")]
@@ -116,6 +116,14 @@ public class DutchTextNormalizerTests
     public void Normalize_DoesNotExpandAShortElision()
     {
         Assert.Equal("d r", Normalizer.Normalize("d'r", DutchFuzzyOptions.Words));
+    }
+
+    [Theory]
+    [InlineData("d'accord", "d accord")]
+    [InlineData("D'Hondt", "d hondt")]
+    public void Normalize_KeepsTheApostropheAsASeparatorForOrdinaryWords(string input, string expected)
+    {
+        Assert.Equal(expected, Normalizer.Normalize(input, DutchFuzzyOptions.Words));
     }
 
     [Theory]

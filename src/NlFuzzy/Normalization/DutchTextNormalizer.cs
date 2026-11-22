@@ -32,7 +32,15 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
             return string.Empty;
         }
 
-        var folded = ExpandElidedArticles(FoldForPhonetics(value, options.RemoveDiacritics));
+        var folded = FoldForPhonetics(value, options.RemoveDiacritics);
+
+        // The elided article is a name particle, so it follows the name-particle switch:
+        // "D'Hondt" is "De Hondt", but ordinary words such as "d'accord" stay as they are.
+        if (options.StripNamePrefixes)
+        {
+            folded = ExpandElidedArticles(folded);
+        }
+
         var cleaned = KeepLettersAndSpaces(folded);
 
         if (cleaned.Length == 0)
@@ -75,7 +83,9 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
     /// particle "de" instead of a lone "d". This must run while the apostrophe still exists, because
     /// the apostrophe is the only thing that tells the article apart from an initial ("D. Jansen").
     /// The <c>d</c> must start a token, and at least three letters must follow the apostrophe, so
-    /// that colloquial "d'r" is left alone.
+    /// that colloquial "d'r" is left alone. <see cref="Normalize"/> only applies this when
+    /// <see cref="DutchFuzzyOptions.StripNamePrefixes"/> is true, so "d'accord" in the
+    /// <see cref="DutchFuzzyOptions.Words"/> preset keeps its apostrophe as a separator.
     /// </summary>
     /// <param name="value">Lower-cased, folded text.</param>
     /// <returns>The rewritten text, or <paramref name="value"/> itself when nothing changes.</returns>
