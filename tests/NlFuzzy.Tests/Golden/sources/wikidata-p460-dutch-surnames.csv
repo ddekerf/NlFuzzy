@@ -1,0 +1,353 @@
+# Wikidata snapshot, fetched 2026-11-22 from https://query.wikidata.org/sparql. CC0. See README.md for the query.
+# decision: match:<category> | nomatch:<category> | excluded:<reason> (case, particle, foreign, ambiguous, duplicate, core).
+a,b,aLabel,bLabel,decision
+Q104764364,Q104764387,Vande Putte,van den Putte,match:particle-separated
+Q104764364,Q21450804,Vande Putte,Vandeputte,match:particle-glued
+Q104764387,Q21450804,van den Putte,Vandeputte,match:particle-glued
+Q104764398,Q65114537,Vande Weghe,van de Weghe,match:particle-separated
+Q105046297,Q105549564,Daams,Daamen,nomatch:nm-final-sound
+Q105046297,Q105550465,Daams,Daam,nomatch:nm-final-sound
+Q105248011,Q30132919,de Grave,Grave,excluded:particle
+Q105538019,Q30147425,Reemers,Reemer,nomatch:nm-final-sound
+Q105549564,Q105550465,Daamen,Daam,nomatch:nm-final-sound
+Q105549564,Q37448636,Daamen,Damen,match:double-vowel
+Q105661243,Q125365874,Broekhof,Broekhoven,nomatch:nm-derived
+Q105750094,Q21476755,Kuijper,Kuijpers,nomatch:nm-final-sound
+Q105750094,Q37527633,Kuijper,Kuyper,match:ui-uy-uij
+Q105750094,Q65768938,Kuijper,Cuijpers,nomatch:nm-final-sound
+Q106030667,Q110141186,De Gier,de Gier,excluded:case
+Q106070255,Q88387586,Krispijn,Chrispijn,match:c-k
+Q106584252,Q113622344,Cardinaels,Cardinael,nomatch:nm-final-sound
+Q107092350,Q118477648,De Bondt,Bondt,excluded:particle
+Q108059191,Q16479291,van Aa,Aa,excluded:particle
+Q108059191,Q77542861,van Aa,van der Aa,excluded:ambiguous
+Q108059346,Q108059422,t´Serclaes van Tilly,T´Serclaes van Tilly,excluded:case
+Q109499111,Q56540193,van der Pauw,Pauw,excluded:particle
+Q110245487,Q66685841,van Dijke,van Dijk,nomatch:nm-final-sound
+Q110381224,Q110414321,ter Laan,Ter Laan,excluded:case
+Q110382468,Q15789461,van der Bosch,Bosch,excluded:particle
+Q110382468,Q83496198,van der Bosch,van den Bosch,match:particle-separated
+Q110856646,Q110856685,Ravestein,Ravesteyn,match:ij-ei-y
+Q111282824,Q42310369,Theeuwen,Teeuwen,match:ph-th-gh
+Q111284784,Q111284823,Van Vark,van Vark,excluded:case
+Q111935230,Q111935736,Van Houtan,Houtan,excluded:particle
+Q111935230,Q21504796,Van Houtan,Van Houten,match:surname-variant
+Q11231408,Q18340752,Fischer,Visser,excluded:foreign
+Q11231408,Q37542214,Fischer,Vissering,excluded:foreign
+Q11231408,Q428826,Fischer,Vischer,excluded:foreign
+Q11231408,Q42897112,Fischer,Visscher,excluded:foreign
+Q11231408,Q5455214,Fischer,Fisser,excluded:foreign
+Q112599355,Q115411929,Wetten,van Wetten,excluded:particle
+Q112599355,Q115411975,Wetten,de Wetten,excluded:particle
+Q112661398,Q16175496,Baass,Bas,nomatch:nm-vowel
+Q112661398,Q21453948,Baass,Baas,match:double-consonant
+Q112772485,Q21494354,de Moor,De Moor,excluded:case
+Q113290448,Q19912259,Van der Meer,Vermeer,match:particle-glued
+Q113290448,Q2177230,Van der Meer,van der Meer,excluded:case
+Q113471694,Q113471697,van der Putten,Van Der Putten,excluded:case
+Q113471694,Q7913869,van der Putten,Van der Putten,excluded:case
+Q113471697,Q7913869,Van Der Putten,Van der Putten,excluded:case
+Q113555384,Q113555458,van Reeken,Reeken,excluded:particle
+Q113674227,Q113675237,Van Roekens,Roekens,excluded:particle
+Q113769589,Q27888006,van de Stolpe,Stolpe,excluded:particle
+Q114366471,Q7913876,van der Veer,Van der Veer,excluded:case
+Q1146752,Q37527633,Cuypers,Kuyper,nomatch:nm-final-sound
+Q1146752,Q65768938,Cuypers,Cuijpers,match:ui-uy-uij
+Q114873966,Q123973408,van Duren,van Duuren,match:double-vowel
+Q115411612,Q115411870,de Wet,de Wett,match:double-consonant
+Q115411612,Q121461306,de Wet,Wet,excluded:particle
+Q115411612,Q21484575,de Wet,De Wet,excluded:case
+Q115411870,Q115412179,de Wett,de Wette,nomatch:nm-final-sound
+Q115411975,Q115412179,de Wetten,de Wette,nomatch:nm-final-sound
+Q115728555,Q121304192,van Hoytema,Hoytema,excluded:particle
+Q1158524,Q21491682,Kramer,Kremer,excluded:ambiguous
+Q1158566,Q25937594,Jacobs,Jacobus,nomatch:nm-derived
+Q1158566,Q28745079,Jacobs,Jakobs,match:c-k
+Q116444935,Q78154207,Vrijlandt,Vrijland,match:final-devoicing
+Q1180481,Q37081596,De Vries,Devries,match:particle-glued
+Q1180481,Q83345792,De Vries,de Vries,excluded:case
+Q118475495,Q118477648,Bontius,Bondt,excluded:foreign
+Q118490808,Q27824311,Beekmans,Beekman,nomatch:nm-final-sound
+Q118789008,Q118789104,van den Broek,Van Den Broek,excluded:case
+Q11941314,Q37507368,Brandt,Brants,nomatch:nm-final-sound
+Q11941314,Q37551970,Brandt,Brandts,nomatch:nm-final-sound
+Q119564513,Q119564627,Timmerhuis,Timmerhaus,excluded:foreign
+Q119564513,Q2158255,Timmerhuis,Timmer,nomatch:nm-derived
+Q119564513,Q65064214,Timmerhuis,Steenhuis,nomatch:nm-unrelated
+Q119564627,Q2158255,Timmerhaus,Timmer,excluded:foreign
+Q119565748,Q2158255,Timmerarens,Timmer,nomatch:nm-derived
+Q119954209,Q139051610,Severens,Severen,nomatch:nm-final-sound
+Q120154787,Q61745648,de Bock,De Bock,excluded:case
+Q12036851,Q21448843,Michel,Michels,nomatch:nm-final-sound
+Q120754767,Q16289589,Van Driessen,van Driessen,excluded:case
+Q121144556,Q49798341,Brockhof,Brockhoff,match:double-consonant
+Q121461306,Q21484575,Wet,De Wet,excluded:particle
+Q122831201,Q122831214,Weken,van der Weken,excluded:particle
+Q122943642,Q122944920,Stroeks,Stroek,nomatch:nm-final-sound
+Q122943642,Q63226210,Stroeks,Stroeken,nomatch:nm-final-sound
+Q122944920,Q63226210,Stroek,Stroeken,nomatch:nm-final-sound
+Q123022496,Q7913577,Pallandt,van Pallandt,excluded:particle
+Q123763650,Q125384847,Bulter,Bultjer,excluded:ambiguous
+Q123763650,Q125385078,Bulter,Bulters,nomatch:nm-final-sound
+Q123763650,Q66247001,Bulter,Bulte,nomatch:nm-final-sound
+Q123939038,Q58007315,Severyns,Severijnse,nomatch:nm-final-sound
+Q125365821,Q49798341,Brookhoff,Brockhoff,excluded:ambiguous
+Q125365874,Q125365899,Broekhoven,Brockhoven,excluded:ambiguous
+Q125365899,Q49798341,Brockhoven,Brockhoff,nomatch:nm-derived
+Q125372280,Q20998170,De Valck,Valck,excluded:particle
+Q125383565,Q66247001,Buld,Bulte,excluded:ambiguous
+Q125404701,Q81513232,De Geest,Geest,excluded:particle
+Q125845659,Q139622936,van de Vosse,Vosse,excluded:particle
+Q125857494,Q15947265,Eijden,Van Eijden,excluded:particle
+Q126089152,Q37560452,Schüppert,Schuppert,match:diacritics
+Q131766489,Q58007315,Severijns,Severijnse,nomatch:nm-final-sound
+Q131766489,Q98874538,Severijns,Severijn,nomatch:nm-final-sound
+Q13188347,Q25125968,Groot,Groote,nomatch:nm-final-sound
+Q13188347,Q63457362,Groot,de Groot,excluded:particle
+Q132146483,Q37330148,Diericks,Dierickx,match:ck-ks-x
+Q132146483,Q62122611,Diericks,Dierick,nomatch:nm-final-sound
+Q132146983,Q132146987,Sturler,de Sturler,excluded:particle
+Q136369070,Q136369078,Gijselman,Gyselman,match:ij-ei-y
+Q13745232,Q1783813,Koopman,Koopmann,match:double-consonant
+Q13745232,Q21482844,Koopman,Koopmans,nomatch:nm-final-sound
+Q13745232,Q27206096,Koopman,Koomen,excluded:ambiguous
+Q13745232,Q37330376,Koopman,Koeman,nomatch:nm-same-prefix
+Q137886652,Q56451853,van Gestel,Gestel,excluded:particle
+Q137886652,Q7913342,van Gestel,Van Gestel,excluded:case
+Q140915348,Q3554499,van der Meule,van der Meulen,excluded:ambiguous
+Q142094066,Q142094117,van Hoogenhouck Tulleken,van Hoogenhouck-Tulleken,match:surname-variant
+Q1441477,Q771958,Timmerman,Timmermans,nomatch:nm-final-sound
+Q14655437,Q21493118,Swartz,Swart,excluded:foreign
+Q1496825,Q1739256,Kerkhof,Kerkhoff,match:double-consonant
+Q1568372,Q33120769,Hagen,Hage,nomatch:nm-final-sound
+Q15789461,Q37544399,Bosch,Bosche,nomatch:nm-final-sound
+Q15789461,Q83496198,Bosch,van den Bosch,excluded:particle
+Q16002391,Q37498374,Alberts,Albertz,match:final-devoicing
+Q16002391,Q73083057,Alberts,Aalberts,match:double-vowel
+Q16147560,Q83338286,Appel,Abbel,excluded:ambiguous
+Q16147560,Q83339408,Appel,Appels,nomatch:nm-final-sound
+Q16175496,Q21453948,Bas,Baas,nomatch:nm-vowel
+Q16479895,Q37534600,Berens,Beerens,match:double-vowel
+Q16576171,Q36896059,Merk,Merck,match:ck-ks-x
+Q16576171,Q6766392,Merk,Mark,nomatch:nm-vowel
+Q1661300,Q21493624,Segers,Seghers,match:ph-th-gh
+Q1661300,Q21502193,Segers,Zegers,match:surname-variant
+Q16800354,Q19902356,Harmes,Hermes,nomatch:nm-vowel
+Q16800354,Q21452015,Harmes,Harmsen,nomatch:nm-final-sound
+Q16800354,Q21488337,Harmes,Harms,excluded:ambiguous
+Q16856359,Q21448097,Zwarts,Zwart,nomatch:nm-final-sound
+Q16860264,Q21482639,Bos,Bosman,nomatch:nm-derived
+Q16860264,Q37212611,Bos,Boes,nomatch:nm-vowel
+Q16865618,Q5125023,Classen,Claessen,match:historic-vowel
+Q16865618,Q83496252,Classen,Classens,nomatch:nm-final-sound
+Q16870014,Q56546760,Franken,Francken,match:ck-ks-x
+Q16870015,Q21452371,Fransen,Franssen,match:double-consonant
+Q16870015,Q27892793,Fransen,Frantzen,excluded:foreign
+Q16870015,Q33093162,Fransen,Franzen,match:surname-variant
+Q16870447,Q21484603,Hageman,Hagman,excluded:ambiguous
+Q16870447,Q33120769,Hageman,Hage,nomatch:nm-derived
+Q16870694,Q5714014,Hendrix,Hendriks,match:ck-ks-x
+Q16871136,Q21452131,Janssen,Jenssen,nomatch:nm-vowel
+Q16871136,Q21491099,Janssen,Janssens,nomatch:nm-final-sound
+Q16871136,Q2733656,Janssen,Jansen,excluded:core
+Q16876462,Q24428260,Marks,Marcus,nomatch:nm-derived
+Q16876462,Q6766392,Marks,Mark,nomatch:nm-final-sound
+Q16876487,Q16932580,Martens,Martyn,nomatch:nm-derived
+Q16882036,Q20997718,Reynders,Reijnders,match:ij-ei-y
+Q16882036,Q37551007,Reynders,Reinders,match:ij-ei-y
+Q16882036,Q87184752,Reynders,Reyners,excluded:ambiguous
+Q16882608,Q37192512,Sanders,Zanders,match:surname-variant
+Q16908652,Q21492630,Hendricks,Hendrickx,match:ck-ks-x
+Q16908652,Q5714014,Hendricks,Hendriks,match:ck-ks-x
+Q17033003,Q1731839,Walters,Wolters,nomatch:nm-vowel
+Q17033003,Q21450946,Walters,Wouters,nomatch:nm-vowel
+Q17144241,Q18537002,Haan,de Haan,excluded:particle
+Q1731839,Q21450946,Wolters,Wouters,nomatch:nm-vowel
+Q1739256,Q83496584,Kerkhoff,Kerkhoffs,nomatch:nm-final-sound
+Q17516268,Q24428260,Markus,Marcus,match:c-k
+Q17516268,Q6766392,Markus,Mark,nomatch:nm-derived
+Q1786621,Q37106540,Witte,Wit,nomatch:nm-final-sound
+Q18187697,Q27254055,Herman,Hermans,nomatch:nm-final-sound
+Q18340752,Q21507459,Visser,Vissers,nomatch:nm-final-sound
+Q18340752,Q37542214,Visser,Vissering,nomatch:nm-derived
+Q18340752,Q428826,Visser,Vischer,match:surname-variant
+Q18340752,Q42897112,Visser,Visscher,match:surname-variant
+Q18340752,Q5455214,Visser,Fisser,match:surname-variant
+Q18404336,Q83496783,Niels,Nils,match:surname-variant
+Q19912259,Q2177230,Vermeer,van der Meer,excluded:duplicate
+Q20906850,Q370531,Schuurmans,Schuurman,nomatch:nm-final-sound
+Q2094309,Q27258144,Pietersen,Pieters,nomatch:nm-final-sound
+Q2094309,Q7192873,Pietersen,Pieterson,excluded:foreign
+Q20998170,Q21482792,Valck,Valcke,nomatch:nm-final-sound
+Q2106585,Q37553361,Potter,Potters,nomatch:nm-final-sound
+Q21075626,Q21492725,Brun,Bruijn,excluded:foreign
+Q21075626,Q21502225,Brun,Bruns,excluded:foreign
+Q21075626,Q961444,Brun,De Bruyn,excluded:foreign
+Q21422177,Q37074116,Otten,Ottens,nomatch:nm-final-sound
+Q21430103,Q37544786,Neiman,Nieman,excluded:foreign
+Q21448097,Q21493118,Zwart,Swart,match:surname-variant
+Q21448097,Q5244873,Zwart,de Zwart,excluded:particle
+Q21448097,Q83338241,Zwart,Zwarte,nomatch:nm-final-sound
+Q21448843,Q21450401,Michels,Michaelis,nomatch:nm-derived
+Q21448843,Q37449880,Michels,Micheels,match:double-vowel
+Q21450777,Q99180014,Huygens,Huygen,nomatch:nm-final-sound
+Q21450853,Q25125968,De Groote,Groote,excluded:particle
+Q21450853,Q63457362,De Groote,de Groot,nomatch:nm-final-sound
+Q21450853,Q83345778,De Groote,de Groote,excluded:case
+Q21450946,Q83383555,Wouters,Wouter,nomatch:nm-final-sound
+Q21450946,Q83383560,Wouters,Wouterse,nomatch:nm-final-sound
+Q21452015,Q21488337,Harmsen,Harms,nomatch:nm-final-sound
+Q21452371,Q27892793,Franssen,Frantzen,excluded:foreign
+Q21452371,Q33093162,Franssen,Franzen,match:surname-variant
+Q21452371,Q47525050,Franssen,Frenssen,nomatch:nm-vowel
+Q21476755,Q37527633,Kuijpers,Kuyper,nomatch:nm-final-sound
+Q21476755,Q65768938,Kuijpers,Cuijpers,match:c-k
+Q21484598,Q267326,Dekkers,Dekker,nomatch:nm-final-sound
+Q21487240,Q37478103,Andriessen,Andries,nomatch:nm-final-sound
+Q21487240,Q83339293,Andriessen,Andriesen,match:double-consonant
+Q21487240,Q83339296,Andriessen,Andriessens,nomatch:nm-final-sound
+Q21488925,Q28745122,Kerstens,Kersten,nomatch:nm-final-sound
+Q21489110,Q37037855,Bergman,Bergmans,nomatch:nm-final-sound
+Q21491099,Q2733656,Janssens,Jansen,nomatch:nm-final-sound
+Q21491102,Q37556351,Jaspar,Jasper,match:surname-variant
+Q21491102,Q83359574,Jaspar,Jaspaert,excluded:ambiguous
+Q21492630,Q5714014,Hendrickx,Hendriks,match:ck-ks-x
+Q21492725,Q21502225,Bruijn,Bruns,nomatch:nm-unrelated
+Q21492725,Q961444,Bruijn,De Bruyn,excluded:particle
+Q21492924,Q2617039,Claassen,Klaassen,match:c-k
+Q21492924,Q5125023,Claassen,Claessen,match:historic-vowel
+Q21492924,Q83344864,Claassen,Claassens,nomatch:nm-final-sound
+Q21493145,Q6291139,Joosten,Josten,match:double-vowel
+Q21493423,Q63457362,DeGroot,de Groot,match:particle-glued
+Q21494140,Q53794869,Klijn,Kleijn,match:ij-ei-y
+Q21494174,Q26945140,Hubert,Bert,nomatch:nm-derived
+Q21501992,Q813701,Beckers,Becker,nomatch:nm-final-sound
+Q21502225,Q961444,Bruns,De Bruyn,excluded:particle
+Q21502285,Q2674262,Dicker,Decker,nomatch:nm-vowel
+Q21504635,Q73083450,Arends,Aarents,match:double-vowel
+Q21504838,Q28913603,Dix,Bendix,nomatch:nm-derived
+Q21504838,Q56709661,Dix,Benedictus,nomatch:nm-derived
+Q21507418,Q5125023,Claessens,Claessen,nomatch:nm-final-sound
+Q21507459,Q37542214,Vissers,Vissering,nomatch:nm-derived
+Q21508276,Q224301,Hofman,Hoffman,match:double-consonant
+Q21508276,Q5876815,Hofman,Hofmans,nomatch:nm-final-sound
+Q21513076,Q56247477,Abeel,Abbeel,match:double-consonant
+Q21513084,Q56540047,Nys,Nijs,match:ij-ei-y
+Q22238164,Q37199691,Voorhees,Voorhis,excluded:foreign
+Q2226872,Q27255697,De Bruin,De Bruyne,nomatch:nm-final-sound
+Q2226872,Q961444,De Bruin,De Bruyn,match:ui-uy-uij
+Q22341181,Q7988583,Westerveld,Westervelt,match:final-devoicing
+Q224301,Q5876815,Hoffman,Hofmans,nomatch:nm-final-sound
+Q23272105,Q29532596,Folmer,Volmer,match:surname-variant
+Q24428260,Q37105409,Marcus,Marci,excluded:foreign
+Q24428260,Q6766392,Marcus,Mark,nomatch:nm-derived
+Q24994088,Q2617039,Klaasen,Klaassen,match:double-consonant
+Q24994088,Q37496836,Klaasen,Klasen,match:double-vowel
+Q24994088,Q83495897,Klaasen,Klaasens,nomatch:nm-final-sound
+Q25125968,Q37487980,Groote,Degroote,excluded:particle
+Q25125968,Q83345778,Groote,de Groote,excluded:particle
+Q2555252,Q5714014,Hendrikx,Hendriks,match:ck-ks-x
+Q2617039,Q83497114,Klaassen,Klaassens,nomatch:nm-final-sound
+Q2712367,Q2733656,Hansen,Jansen,excluded:core
+Q2712367,Q83354833,Hansen,Hanzen,match:surname-variant
+Q27887974,Q37058512,Tillman,Tilman,match:double-consonant
+Q27888006,Q37239376,Stolpe,Stolp,nomatch:nm-final-sound
+Q27892793,Q33093162,Frantzen,Franzen,excluded:foreign
+Q2793828,Q29470680,Phillips,Philips,match:double-consonant
+Q2793828,Q83376089,Phillips,Philippens,nomatch:nm-derived
+Q27974378,Q28050069,Rijckaert,Ryckaert,match:ij-ei-y
+Q28800684,Q37557071,Frederick,Fredrich,excluded:foreign
+Q28802119,Q83438629,Kort,Korting,nomatch:nm-derived
+Q28913603,Q56709661,Bendix,Benedictus,nomatch:nm-derived
+Q32860657,Q37438357,Mauritz,Maritz,excluded:foreign
+Q33093162,Q83350066,Franzen,Frensen,nomatch:nm-vowel
+Q33550903,Q37561715,Vink,Vinke,nomatch:nm-final-sound
+Q33550903,Q56246521,Vink,Vinck,match:ck-ks-x
+Q33550903,Q65769108,Vink,Vinken,nomatch:nm-final-sound
+Q36870613,Q83495271,Meester,Meesters,nomatch:nm-final-sound
+Q36870613,Q83495272,Meester,Mesters,nomatch:nm-final-sound
+Q36873445,Q37478103,Dries,Andries,nomatch:nm-derived
+Q36873445,Q37546831,Dries,Driesen,nomatch:nm-final-sound
+Q36894420,Q37500646,Jaspers,Caspers,nomatch:nm-first-sound
+Q36894420,Q37556351,Jaspers,Jasper,nomatch:nm-final-sound
+Q36894420,Q83359890,Jaspers,Jespers,nomatch:nm-vowel
+Q36894420,Q83495130,Jaspers,Kaspers,nomatch:nm-first-sound
+Q36896059,Q37284360,Merck,Merckx,nomatch:nm-final-sound
+Q36896059,Q56245758,Merck,Marck,nomatch:nm-vowel
+Q36896059,Q6766392,Merck,Mark,nomatch:nm-vowel
+Q36944586,Q37561003,Rieke,Rieken,nomatch:nm-final-sound
+Q36995851,Q83381102,Schoon,Schoonjans,nomatch:nm-derived
+Q370531,Q37489590,Schuurman,Schuur,nomatch:nm-derived
+Q37081596,Q83345792,Devries,de Vries,excluded:duplicate
+Q37099979,Q37540284,Vandervelde,Vandervelden,nomatch:nm-final-sound
+Q37284939,Q98470366,Joos,Joosen,nomatch:nm-final-sound
+Q37306623,Q42848575,Debeer,de Beer,match:particle-glued
+Q37330148,Q62122611,Dierickx,Dierick,nomatch:nm-final-sound
+Q37430848,Q37492414,Brands,Brans,match:surname-variant
+Q37430848,Q37507368,Brands,Brants,match:final-devoicing
+Q37430848,Q37551970,Brands,Brandts,match:final-devoicing
+Q37454584,Q37459135,Campe,Kamps,nomatch:nm-final-sound
+Q37454584,Q37459529,Campe,Kamp,nomatch:nm-final-sound
+Q37454584,Q37554173,Campe,Kamper,nomatch:nm-derived
+Q37459135,Q37459529,Kamps,Kamp,nomatch:nm-final-sound
+Q37459135,Q37554173,Kamps,Kamper,nomatch:nm-derived
+Q37459529,Q37554084,Kamp,Osterkamp,nomatch:nm-derived
+Q37466977,Q41501605,Baltus,Baltussen,nomatch:nm-final-sound
+Q37482638,Q56244387,Midden,Middendorp,nomatch:nm-derived
+Q37487980,Q83345778,Degroote,de Groote,match:particle-glued
+Q37492414,Q37507368,Brans,Brants,match:surname-variant
+Q37492414,Q37551970,Brans,Brandts,match:surname-variant
+Q37493830,Q66466898,Houtman,de Houtman,excluded:particle
+Q37496836,Q65768983,Klasen,Klasens,nomatch:nm-final-sound
+Q37498374,Q73083057,Albertz,Aalberts,match:double-vowel
+Q37500646,Q83359890,Caspers,Jespers,nomatch:nm-first-sound
+Q37500646,Q83495130,Caspers,Kaspers,match:c-k
+Q37507368,Q37551970,Brants,Brandts,match:final-devoicing
+Q37507566,Q55632090,Ruys,Ruijs,match:ui-uy-uij
+Q37511379,Q56546919,Vanhoof,Van 't Hof,excluded:ambiguous
+Q37527633,Q65768938,Kuyper,Cuijpers,nomatch:nm-final-sound
+Q37534600,Q83341267,Beerens,Beerends,match:final-devoicing
+Q37535916,Q83357873,Hendriksen,Hindriksen,match:surname-variant
+Q37554084,Q65562073,Osterkamp,Oosterkamp,match:double-vowel
+Q37554084,Q83375003,Osterkamp,Ostkamp,excluded:ambiguous
+Q37555561,Q83348729,Ernest,Ernestus,nomatch:nm-derived
+Q37556351,Q83359574,Jasper,Jaspaert,excluded:ambiguous
+Q37561715,Q56255701,Vinke,Vincke,match:ck-ks-x
+Q37561715,Q65769108,Vinke,Vinken,nomatch:nm-final-sound
+Q37561967,Q83377674,Roelfs,Roelfes,excluded:ambiguous
+Q403433,Q66238639,de Jong,De Jong,excluded:case
+Q41501605,Q83340396,Baltussen,Baltissen,match:surname-variant
+Q42848575,Q814067,de Beer,Beer,excluded:particle
+Q428826,Q42897112,Vischer,Visscher,match:double-consonant
+Q47525050,Q83350066,Frenssen,Frensen,match:double-consonant
+Q56246521,Q56255701,Vinck,Vincke,nomatch:nm-final-sound
+Q56246521,Q83383397,Vinck,Vincken,nomatch:nm-final-sound
+Q56255701,Q83383397,Vincke,Vincken,nomatch:nm-final-sound
+Q56451853,Q7913342,Gestel,Van Gestel,excluded:particle
+Q56546919,Q56603895,Van 't Hof,van 't Hoff,match:double-consonant
+Q5714014,Q83357870,Hendriks,Hindriks,match:surname-variant
+Q5714014,Q83357873,Hendriks,Hindriksen,nomatch:nm-final-sound
+Q63457362,Q83345778,de Groot,de Groote,excluded:duplicate
+Q63457362,Q83345849,de Groot,Degroot,excluded:duplicate
+Q65768983,Q83344864,Klasens,Claassens,match:c-k
+Q65768983,Q83494277,Klasens,Clasens,match:c-k
+Q65768983,Q83495897,Klasens,Klaasens,match:double-vowel
+Q65768983,Q83496252,Klasens,Classens,match:c-k
+Q65768983,Q83497114,Klasens,Klaassens,match:double-vowel
+Q65769108,Q83349522,Vinken,Fincken,match:surname-variant
+Q65769108,Q83383397,Vinken,Vincken,match:ck-ks-x
+Q83338286,Q83338292,Abbel,Abelen,nomatch:nm-derived
+Q83344864,Q83496252,Claassens,Classens,match:double-vowel
+Q83344864,Q83497114,Claassens,Klaassens,match:c-k
+Q83349522,Q83383397,Fincken,Vincken,match:surname-variant
+Q83359890,Q83495130,Jespers,Kaspers,nomatch:nm-first-sound
+Q83383555,Q83383560,Wouter,Wouterse,nomatch:nm-final-sound
+Q83440768,Q83440819,Stienissen,Stinnissen,match:surname-variant
+Q83494277,Q83496252,Clasens,Classens,match:double-consonant
+Q83495271,Q83495272,Meesters,Mesters,match:double-vowel
+Q83495897,Q83497114,Klaasens,Klaassens,match:double-consonant
+Q917462,Q917501,Brink,Brinkman,nomatch:nm-derived
+Q94580126,Q94580167,van den Bemt,Van den Bempt,match:surname-variant
+Q94704074,Q94704105,Mouij,Mouy,match:ij-ei-y
+Q99907917,Q99909560,de Goeij,de Goey,match:ij-ei-y
+Q99908377,Q99908481,Goeij,Goey,match:ij-ei-y
