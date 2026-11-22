@@ -70,5 +70,11 @@ and rebuilt per process, so this is not a persisted-key change.
 - [Roughly twice the scoring cost for multi-token pairs] → Measure with the existing
   `IndexBenchmarks` and the linear-scan benchmark; acceptance is no more than a 2× regression on
   multi-token data and no change on single-token data. Update README §9 with the new numbers.
+  Outcome: the straightforward version measured 2.1–2.6×, so three result-preserving
+  optimizations were added. Dice bigrams are precomputed and sorted once per `PreparedText` and
+  intersected by merge; Jaro-Winkler and Levenshtein reuse per-thread scratch buffers; and the
+  canonical score is skipped when the ordered score is already ≥ 0.97 or both sides are already in
+  canonical order. The result is ~1.0–1.3× on multi-token data, with single-token scoring slightly
+  faster than before.
 - [Anchor penalties now also apply to the canonical form] → Intended: the penalties still separate
   `Jan Jansen` from `Jan Hansen` in either order.

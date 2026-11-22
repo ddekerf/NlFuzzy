@@ -20,7 +20,8 @@
 
 ## 4. Performance and docs
 
-- [ ] 4.1 Run `dotnet run --project bench/NlFuzzy.Benchmarks -c Release -- --filter '*'` before and after; verify multi-token scoring regresses by at most 2× and single-token scoring is unchanged, and update README §9 with the new numbers
+- [x] 4.1 Run `dotnet run --project bench/NlFuzzy.Benchmarks -c Release -- --filter '*'` before and after; verify multi-token scoring regresses by at most 2× and single-token scoring is unchanged, and update README §9 with the new numbers
+  - Measured with the `ScorerBenchmarks` and `IndexBenchmarks` filters, `--job short --inProcess` (BenchmarkDotNet's generated project hit the Windows path limit). The first implementation came in at 2.1× (`Exact`) and 2.6× (`Blocked`); after the exact optimizations (precomputed Dice bigrams, reusable Jaro-Winkler/Levenshtein buffers, skipping a canonical score that cannot win) it is ~1.3× (`Exact`), ~1.0× (`Blocked`), ~1.25× (linear scan), with single-token scoring slightly faster. A 20,000-pair differential run against the previous commit showed no score changes outside the reordered case.
 - [x] 4.2 Add a README §3 example for "Achternaam, Voornaam" matching, with a matching `ReadmeExamplesTests` case, and a §6 note that keys and `SoundsLike` stay order-sensitive; verify `ReadmeExamplesTests` passes
 - [x] 4.3 Add a `[Unreleased]` CHANGELOG entry under "Gewijzigd" describing the scoring change and the opt-out; verify it names `IgnoreTokenOrder` and the affected presets
 

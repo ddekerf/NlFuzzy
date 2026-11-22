@@ -349,6 +349,28 @@ Drie dingen om te weten:
   je eigen data, en gebruik `DutchFuzzyIndexSearchMode.BlockedOnly` als je een harde bovengrens
   nodig hebt.
 
+### Kosten van `IgnoreTokenOrder`
+
+Wanneer beide kanten twee of meer woorden hebben, berekent de scorer naast de score in de
+oorspronkelijke volgorde ook een score op de gesorteerde woorden. Die tweede berekening wordt
+overgeslagen als ze het resultaat niet kan veranderen (de eerste score is al ≥ 0.97, of beide kanten
+staan al in gesorteerde volgorde). Daarnaast worden de bigrammen voor de n-gramcomponent nu één keer
+per string voorbereid en hergebruiken Jaro-Winkler en Levenshtein hun werkbuffers, wat ook
+enkelwoordsvergelijkingen goedkoper maakt. Gemeten met `ScorerBenchmarks` en `IndexBenchmarks`
+(preset `Names`, `--job short --inProcess`, .NET 10, Windows x64), vóór en na de wijziging:
+
+| Meting | Vóór | Na | Factor |
+|---|---|---|---|
+| Score, één woord (`Schoenmakers` / `Schoonmakers`) | ~0,75–1,05 µs | ~0,68 µs | ≤ 1,0× |
+| Score, twee woorden in dezelfde volgorde | ~0,95–1,24 µs | ~1,21 µs | ~1,0–1,3× |
+| Score, omgedraaide volgorde | ~1,67–2,08 µs | ~1,68 µs | ~1,0× |
+| `Search` (`Exact`), 100.000 namen van twee woorden | ~148 ms | ~189 ms | ~1,3× |
+| `Search` (`Blocked`), 100.000 namen | ~3,2 ms | ~3,1 ms | ~1,0× |
+| `FuzzyMatchDutch` (lineaire scan), 100.000 namen | ~213 ms | ~267 ms | ~1,25× |
+
+De ranges in de kolom "Vóór" komen van twee aparte basismetingen. Heb je de volgorde-tolerantie niet
+nodig, zet dan `IgnoreTokenOrder = false`; dan valt de tweede score volledig weg.
+
 ### Invoerlengte en onbetrouwbare invoer
 
 Levenshtein, Damerau-Levenshtein en Jaro-Winkler zijn `O(n·m)` in de lengte van de invoer. Komt de
