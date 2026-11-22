@@ -117,7 +117,9 @@ public sealed class EvaluationBaseline
     {
         if (actual < expected - OverallTolerance)
         {
-            violations.Add($"overall {metric} ({split}): {actual:F4}, baseline {expected:F4}, allowed {expected - OverallTolerance:F4}");
+            violations.Add(string.Create(
+                System.Globalization.CultureInfo.InvariantCulture,
+                $"overall {metric} ({split}): {actual:F4}, baseline {expected:F4}, allowed {expected - OverallTolerance:F4}"));
         }
     }
 }

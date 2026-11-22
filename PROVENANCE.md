@@ -83,6 +83,20 @@ niet overgenomen uit een namen- of plaatsnamenbestand.
 De positieve en negatieve naamparen zijn met de hand samengesteld uit gangbare Nederlandse en
 Vlaamse spellingvarianten. Ze bevatten geen persoonsgegevens uit een echte administratie.
 
+De evaluatieset `evaluation-pairs.csv` (1.026 paren) heeft twee bronnen:
+
+- **772 paren met de hand samengesteld** per variantcategorie, op basis van algemeen bekende
+  Nederlandse en Vlaamse spellingvarianten, voornamen en familienamen. Combinaties van voornaam en
+  achternaam (categorie `token-order`) zijn gangbare namen en verwijzen niet naar bestaande personen.
+- **254 paren uit Wikidata** (CC0 1.0): relatie P460 tussen Nederlandse familienamen, opgehaald op
+  2026-11-22. Van de 350 ruwe paren is elk paar met de hand beoordeeld; 96 zijn uitgesloten
+  (alleen hoofdletters, tussenvoegsel aan één kant, verwante naam in een andere taal, twijfelgeval,
+  dubbel of al in de kernset). De query, de momentopname en de beslissing per rij staan in
+  `Golden/sources/`.
+
+Labels zijn vastgelegd vóór de eerste meting en volgen het taalkundige oordeel, niet de uitkomst van
+de scorer.
+
 ## Controle-instructie
 
 Wil je dit zelf verifiëren:

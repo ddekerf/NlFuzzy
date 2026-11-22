@@ -29,11 +29,21 @@ Onderstaande pakketten worden alleen gebruikt bij het bouwen, testen en benchmar
 | Pakket | Versie | Licentie | Gebruikt in |
 | --- | --- | --- | --- |
 | xunit | 2.9.3 | Apache-2.0 | tests |
-| xunit.runner.visualstudio | 3.1.4 | Apache-2.0 | tests |
-| Microsoft.NET.Test.Sdk | 17.14.1 | MIT | tests |
-| coverlet.collector | 6.0.4 | MIT | tests (coverage) |
-| coverlet.msbuild | 6.0.4 | MIT | tests (coverage) |
-| BenchmarkDotNet | 0.14.0 | MIT | benchmarks |
+| xunit.runner.visualstudio | 4.0.1 | Apache-2.0 | tests |
+| Microsoft.NET.Test.Sdk | 18.11.0 | MIT | tests |
+| coverlet.collector | 10.1.0 | MIT | tests (coverage) |
+| coverlet.msbuild | 10.1.0 | MIT | tests (coverage) |
+| BenchmarkDotNet | 0.15.8 | MIT | benchmarks |
 
 De actuele lijst staat in `tests/NlFuzzy.Tests/NlFuzzy.Tests.csproj` en
 `bench/NlFuzzy.Benchmarks/NlFuzzy.Benchmarks.csproj`.
+
+## Testdata
+
+De evaluatieset `tests/NlFuzzy.Tests/Golden/evaluation-pairs.csv` bevat 254 naamparen die afkomstig
+zijn uit **Wikidata** (relatie P460 "zou hetzelfde zijn als" tussen Nederlandse familienamen),
+opgehaald op 2026-11-22. De gegevens van Wikidata zijn vrijgegeven onder
+**[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)**; er gelden geen
+naamsvermeldings- of andere verplichtingen. De ruwe momentopname, de query en de handmatige
+labelbeslissing per rij staan in `tests/NlFuzzy.Tests/Golden/sources/`. Deze testdata zit niet in
+het gepubliceerde NlFuzzy-pakket.

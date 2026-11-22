@@ -285,6 +285,32 @@ Zet ze op `0` om het klassieke gedrag terug te krijgen.
 - **Zeer lange invoer.** De edit-distance-componenten zijn kwadratisch in de lengte. Begrens de
   invoer wanneer die van buiten komt; zie [§9](#9-prestaties).
 
+### Kwaliteit
+
+De kwaliteit wordt gemeten op een gelabelde evaluatieset van 1.026 naamparen (624 dezelfde naam,
+402 een andere naam) in 26 categorieën, deels met de hand samengesteld en deels afkomstig uit
+Wikidata (CC0). 30% van de paren zit in een vaste *holdout*-split waar nooit op afgestemd wordt.
+Met de preset `Names` en drempel 0.82:
+
+| Split | Precisie | Recall | F1 |
+|---|---:|---:|---:|
+| holdout (277 paren) | 0.936 | 0.874 | 0.904 |
+| tune (749 paren) | 0.962 | 0.882 | 0.920 |
+
+De zwakste categorieën zijn bekend en worden in een volgende wijziging aangepakt: patroniemen die
+alleen in `-se`/`-sen` verschillen (`Willemsen`/`Willemse`: 0 van 25), typfouten van één teken
+(16 van 40) en paren met een andere klinker die toch als dezelfde naam scoren (`Peters`/`Pieters`:
+34 van 45 correct afgewezen).
+
+De volledige tabel per categorie staat in de uitvoer van `EvaluationTests`:
+
+```bash
+dotnet test tests/NlFuzzy.Tests -c Release --filter "FullyQualifiedName~EvaluationTests" --logger "console;verbosity=detailed"
+```
+
+De build faalt wanneer een categorie meer dan één paar verliest of een totaalcijfer meer dan
+0,5 procentpunt daalt ten opzichte van `tests/NlFuzzy.Tests/Golden/evaluation-baseline.json`.
+
 ## 7. Sleutels persisteren
 
 Wil je fonetische sleutels in een database bewaren (bijvoorbeeld als index voor blocking), houd
