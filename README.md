@@ -171,6 +171,7 @@ De encoder laat de volgende paren op dezelfde sleutel uitkomen (profiel `Toleran
 | v / w | `vrede` = `wrede` | `FRT` |
 | d' / de (elisie) | `D'Hondt` = `De Hondt` | `ANT T` |
 | ou / au / auw / ouw | `kauw` = `kou` (klasse 7) | — |
+| -sen / -se (alleen preset `Names`) | `Willemsen` = `Willemse` | `F3L2MS2` (`Names`) |
 
 Het uitvoeralfabet is `P B T D K G F V W S Z X J L M N R H Q` plus de klinkerklassen `1`-`7`
 (alleen zichtbaar wanneer `EncodeVowels = true`) en `A` voor een woordinitiële klinker wanneer
@@ -206,11 +207,11 @@ Scores voor dezelfde paren:
 
 ### De drie presets
 
-| Preset | Profiel | `EncodeVowels` | `StripNamePrefixes` | `SplitGluedNamePrefixes` | `IgnoreTokenOrder` | Waarvoor |
-|---|---|---|---|---|---|---|
-| `DutchFuzzyOptions.Default` | Tolerant | nee | ja | nee | ja | algemeen, hoge recall |
-| `DutchFuzzyOptions.Names` | Tolerant | ja | ja | ja | ja | persoonsnamen, ook Vlaamse aaneengeschreven tussenvoegsels |
-| `DutchFuzzyOptions.Words` | Strict | ja | nee | nee | nee | gewone woorden in plaats van namen |
+| Preset | Profiel | `EncodeVowels` | `StripNamePrefixes` | `SplitGluedNamePrefixes` | `IgnoreTokenOrder` | `MergeSeSenEndings` | Waarvoor |
+|---|---|---|---|---|---|---|---|
+| `DutchFuzzyOptions.Default` | Tolerant | nee | ja | nee | ja | nee | algemeen, hoge recall |
+| `DutchFuzzyOptions.Names` | Tolerant | ja | ja | ja | ja | ja | persoonsnamen, ook Vlaamse aaneengeschreven tussenvoegsels |
+| `DutchFuzzyOptions.Words` | Strict | ja | nee | nee | nee | nee | gewone woorden in plaats van namen |
 
 `Names` is de preset waartegen de gouden dataset gevalideerd is. Het verschil is groot bij
 aaneengeschreven tussenvoegsels:
@@ -250,7 +251,7 @@ afstandsmaten dat verschil nauwelijks opmerken:
 
 | Paar | zonder ankerstraf | met ankerstraf (standaard) |
 |---|---|---|
-| `Jansen` / `Hansen` | 0.846 | 0.677 |
+| `Jansen` / `Hansen` | 0.831 | 0.665 |
 | `Kuipers` / `Kuiper` | 0.897 | 0.717 |
 
 Zet ze op `0` om het klassieke gedrag terug te krijgen.
@@ -294,13 +295,13 @@ Met de preset `Names` en drempel 0.82:
 
 | Split | Precisie | Recall | F1 |
 |---|---:|---:|---:|
-| holdout (277 paren) | 0.936 | 0.874 | 0.904 |
-| tune (749 paren) | 0.962 | 0.882 | 0.920 |
+| holdout (277 paren) | 0.937 | 0.892 | 0.914 |
+| tune (749 paren) | 0.966 | 0.928 | 0.946 |
 
-De zwakste categorieën zijn bekend en worden in een volgende wijziging aangepakt: patroniemen die
-alleen in `-se`/`-sen` verschillen (`Willemsen`/`Willemse`: 0 van 25), typfouten van één teken
-(16 van 40) en paren met een andere klinker die toch als dezelfde naam scoren (`Peters`/`Pieters`:
-34 van 45 correct afgewezen).
+Patroniemen die alleen in `-se`/`-sen` verschillen (`Willemsen`/`Willemse`) matchen sinds
+`MergeSeSenEndings` allemaal (25 van 25, was 0). De zwakste categorieën zijn nu typfouten van één
+teken (16 van 40) en paren met een andere klinker die toch als dezelfde naam scoren
+(`Peters`/`Pieters`: 35 van 45 correct afgewezen).
 
 De volledige tabel per categorie staat in de uitvoer van `EvaluationTests`:
 

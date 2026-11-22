@@ -147,6 +147,13 @@ public class ReadmeExamplesTests
         Assert.Equal(DutchFuzzy.PhoneticKey("kauw", options), DutchFuzzy.PhoneticKey("kou", options));
     }
 
+    [Fact]
+    public void Sectie4_PatroniemSenEnSeInNames()
+    {
+        Assert.Equal("F3L2MS2", DutchFuzzy.PhoneticKey("Willemsen", DutchFuzzyOptions.Names));
+        Assert.Equal("F3L2MS2", DutchFuzzy.PhoneticKey("Willemse", DutchFuzzyOptions.Names));
+    }
+
     [Theory]
     // Section 5 of the README: Strict versus Tolerant.
     [InlineData("vrede", "VRD", "FRT")]
@@ -192,18 +199,21 @@ public class ReadmeExamplesTests
         Assert.True(DutchFuzzyOptions.Default.StripNamePrefixes);
         Assert.False(DutchFuzzyOptions.Default.SplitGluedNamePrefixes);
         Assert.True(DutchFuzzyOptions.Default.IgnoreTokenOrder);
+        Assert.False(DutchFuzzyOptions.Default.MergeSeSenEndings);
 
         Assert.Equal(DutchPhoneticProfile.Tolerant, DutchFuzzyOptions.Names.Profile);
         Assert.True(DutchFuzzyOptions.Names.EncodeVowels);
         Assert.True(DutchFuzzyOptions.Names.StripNamePrefixes);
         Assert.True(DutchFuzzyOptions.Names.SplitGluedNamePrefixes);
         Assert.True(DutchFuzzyOptions.Names.IgnoreTokenOrder);
+        Assert.True(DutchFuzzyOptions.Names.MergeSeSenEndings);
 
         Assert.Equal(DutchPhoneticProfile.Strict, DutchFuzzyOptions.Words.Profile);
         Assert.True(DutchFuzzyOptions.Words.EncodeVowels);
         Assert.False(DutchFuzzyOptions.Words.StripNamePrefixes);
         Assert.False(DutchFuzzyOptions.Words.SplitGluedNamePrefixes);
         Assert.False(DutchFuzzyOptions.Words.IgnoreTokenOrder);
+        Assert.False(DutchFuzzyOptions.Words.MergeSeSenEndings);
     }
 
     [Fact]
@@ -223,7 +233,7 @@ public class ReadmeExamplesTests
     }
 
     [Theory]
-    [InlineData("Jansen", "Hansen", 0.846, 0.677)]
+    [InlineData("Jansen", "Hansen", 0.831, 0.665)]
     [InlineData("Kuipers", "Kuiper", 0.897, 0.717)]
     public void Sectie5_Ankerstraffen(string a, string b, double zonder, double met)
     {

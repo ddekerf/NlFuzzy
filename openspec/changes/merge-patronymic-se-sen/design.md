@@ -46,9 +46,17 @@ differs, so the pair scores about 0.9 and exact matches still rank first.
 `IgnoreTokenOrder`: a named behaviour that callers can switch off. Gating it on an existing flag such
 as `EncodeVowels` would silently turn it on for `Words` as well, which is not a names preset.
 
-### 3. Six-letter minimum
-The rule only applies to tokens of six or more letters, so short words and place names (`Assen`
-versus the Flemish town `Asse`) keep their own keys. Every patronymic in the evaluation set is longer.
+### 3. Five-letter minimum
+The rule only applies to tokens of five or more letters, so a bare `-sen` with at most one letter in
+front stays as it is.
+
+*Revised during implementation:* the plan said six letters, to keep the place name `Assen` apart from
+the Flemish town `Asse`. The evaluation showed that a letter count depends on spelling: `Gijsen`
+(6 letters) lost its `n` but `Gysen` (5 letters, the same name) did not, and the pair dropped from
+0.900 to 0.594. A sound-based guard cannot help either, because `Gysen` and `Assen` both have a
+two-sound stem. Spelling variants must not decide whether the rule applies, so the minimum is five,
+and `Assen`/`Asse` now share a key. That fits the rule's own logic (a final `-n` after `-se` is
+dropped in speech), and the option is `Names`-only.
 
 ### 4. Measure, then raise the baseline
 The floor test must stay green on the unchanged categories. The patronymic category is expected to go
@@ -60,7 +68,11 @@ the baseline is rewritten with `NLFUZZY_WRITE_BASELINE` in a commit of its own t
 - [`-s`/`-sen` no-matches move one edit closer] → They keep a different final key character, so the
   final-sound penalty still applies. The floor test covers `nm-final-sound`; if any pair crosses the
   threshold, stop and revisit before raising the baseline.
-- [Non-patronymic names of six or more letters ending in `-sen`/`-zen`, such as `Huizen`] →
+- [A near-threshold pair loses a pass because the shared trailing `N` no longer pads the keys] → Seen
+  once: `Stienissen`/`Stinnissen` (0.827 → 0.811). Its keys already differ a lot because of the
+  existing `ti`-before-vowel rule (`S2N3S2` vs `ST3N3S2`), so dropping the `N` makes that difference
+  count more. Accepted within the floor tolerance; the `ti` rule is a separate change.
+- [Non-patronymic names of five or more letters ending in `-sen`/`-zen`, such as `Huizen`] →
   `Huizen`/`Huize` would share a key. In names these are spelling variants of the same name too, and
   the option is `Names`-only.
 - [Keys change for `Names`] → No published package yet; record as **BREAKING** for keys in

@@ -61,6 +61,7 @@ public sealed class NlFuzzy.DutchFuzzyOptions
     System.Boolean Equals(NlFuzzy.DutchFuzzyOptions other)
     System.Boolean Equals(System.Object obj)
     System.Boolean IgnoreTokenOrder { get; set; }
+    System.Boolean MergeSeSenEndings { get; set; }
     System.Boolean RemoveDiacritics { get; set; }
     System.Boolean SplitGluedNamePrefixes { get; set; }
     System.Boolean StripNamePrefixes { get; set; }

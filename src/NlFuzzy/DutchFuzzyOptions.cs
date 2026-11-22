@@ -22,7 +22,8 @@ public sealed record DutchFuzzyOptions
         Profile = DutchPhoneticProfile.Tolerant,
         StripNamePrefixes = true,
         SplitGluedNamePrefixes = true,
-        EncodeVowels = true
+        EncodeVowels = true,
+        MergeSeSenEndings = true
     };
 
     /// <summary>Options tuned for comparing ordinary Dutch words rather than proper names.</summary>
@@ -65,6 +66,14 @@ public sealed record DutchFuzzyOptions
     /// input. Phonetic keys are not affected. Default: true (false in <see cref="Words"/>).
     /// </summary>
     public bool IgnoreTokenOrder { get; init; } = true;
+
+    /// <summary>
+    /// Encode a token of five or more letters that ends in "-sen" or "-zen" as if it ended in "-se" or
+    /// "-ze", so that the two forms of a patronymic share a key ("Willemsen" = "Willemse"). The "-s"
+    /// form ("Willems") keeps its own key. Only meaningful with <see cref="EncodeVowels"/>, which is
+    /// why it is only on in <see cref="Names"/>. Default: false.
+    /// </summary>
+    public bool MergeSeSenEndings { get; init; }
 
     /// <summary>Maximum length of the produced phonetic key. 0 = unlimited. Default: 0.</summary>
     public int MaxKeyLength { get; init; }

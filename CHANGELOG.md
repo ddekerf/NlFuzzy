@@ -32,6 +32,15 @@ eerste publicatie op nuget.org.
 
 ### Gewijzigd
 
+- **Patroniemen op `-sen` en `-se` krijgen dezelfde sleutel in de preset `Names`.** Nieuwe optie
+  `DutchFuzzyOptions.MergeSeSenEndings`, `true` in `Names` en `false` in `Default` en `Words`: een
+  woord van minstens vijf letters dat op `-sen` of `-zen` eindigt, wordt gecodeerd alsof het op `-se`
+  of `-ze` eindigt. `Willemsen` en `Willemse` krijgen zo dezelfde sleutel en scoren 0.979 (was 0.738);
+  op de evaluatieset matchen nu 25 van de 25 zulke paren (was 0). `Willems` houdt een eigen sleutel.
+  **BREAKING (fonetische sleutels):** in de preset `Names` veranderen de sleutels van elk woord van
+  vijf of meer letters op `-sen`/`-zen`; `Default` en `Words` produceren dezelfde sleutels als
+  voorheen.
+
 - **`DutchFuzzyIndex<T>.Search` is standaard exact.** De index gaf geen enkel resultaat buiten de
   fonetische blokken zodra er één (mogelijk irrelevante) blokkandidaat bestond, ook niet wanneer een
   ander item ruim boven de drempel scoorde. De nieuwe standaardmodus

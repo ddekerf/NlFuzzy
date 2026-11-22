@@ -11,7 +11,7 @@ then pushes the score to about 0.74.
 
 ## What Changes
 
-- New option `DutchFuzzyOptions.MergeSeSenEndings`: when true, a token of at least six letters that
+- New option `DutchFuzzyOptions.MergeSeSenEndings`: when true, a token of at least five letters that
   ends in `-sen` or `-zen` is encoded as if it ended in `-se` / `-ze`. `Willemsen` and `Willemse`
   share a key, so `SoundsLike`, `DutchPhoneticEqualityComparer` and index blocking treat them as the
   same name too.
@@ -21,7 +21,7 @@ then pushes the score to about 0.74.
 - `-s` versus `-sen` (`Willems`/`Willemsen`) and other ending changes keep different keys.
 - The evaluation baseline is raised in a commit of its own, once the improvement is measured on both
   splits.
-- **BREAKING (phonetic keys, `Names` only)**: keys change for every token ending in `-sen`/`-zen` of six
+- **BREAKING (phonetic keys, `Names` only)**: keys change for every token ending in `-sen`/`-zen` of five
   or more letters. Nothing is published to nuget.org yet, so no persisted keys are affected.
 
 ## Capabilities

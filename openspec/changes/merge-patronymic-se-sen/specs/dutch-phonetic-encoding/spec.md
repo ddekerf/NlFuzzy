@@ -19,9 +19,13 @@ key. Shorter tokens, and tokens with other endings, SHALL be encoded unchanged.
 - **WHEN** `Hansen` and `Hanzen` are encoded with the `Names` preset
 - **THEN** both produce the same phonetic key
 
-#### Scenario: Short tokens are left alone
-- **WHEN** `Assen` and `Asse` are encoded with the `Names` preset
-- **THEN** their keys differ
+#### Scenario: The stem's spelling does not matter
+- **WHEN** `Gijsen` and `Gysen` are encoded with the `Names` preset
+- **THEN** both produce the same phonetic key
+
+#### Scenario: Very short tokens are left alone
+- **WHEN** the four-letter tokens `Esen` and `Isen` are encoded with the `Names` preset
+- **THEN** they keep their final `N`, so `Esen` and `Ese` have different keys
 
 #### Scenario: Off by default
 - **WHEN** `Willemsen` and `Willemse` are encoded with the `Default` preset
