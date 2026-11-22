@@ -24,25 +24,27 @@ equal.
 A new `DutchFuzzyOptions` SHALL default to: `Tolerant` profile, `RemoveDiacritics` true,
 `StripNamePrefixes` true, `SplitGluedNamePrefixes` false, `EncodeVowels` false, `MergeSeSenEndings`
 false, `MaxKeyLength` 0 (unlimited), `IgnoreTokenOrder` true, weights 0.35 orthographic, 0.45 phonetic
-and 0.20 n-gram, `IdenticalKeyFloor` 0.90, `DefaultThreshold` 0.82 and both phoneme penalties 0.20.
+and 0.20 n-gram, `IdenticalKeyFloor` 0.90, `TranspositionFloor` 0 (off), `DefaultThreshold` 0.82 and
+both phoneme penalties 0.20.
 
 #### Scenario: Default preset
 - **WHEN** `DutchFuzzyOptions.Default` is inspected
 - **THEN** every property has the documented default value
 
 ### Requirement: Three presets
-The library SHALL offer three singleton presets that differ only in their encoding and ordering flags:
-`Default` (Tolerant, vowels dropped, particles moved, no glued splitting, token order ignored),
-`Names` (Tolerant, vowel classes, particles moved, glued splitting, `-sen` encoded like `-se`, token
-order ignored) and `Words` (Strict, vowel classes, no particle handling, token order respected).
+The library SHALL offer three singleton presets that differ only in their encoding, ordering and
+typo flags: `Default` (Tolerant, vowels dropped, particles moved, no glued splitting, token order
+ignored, no transposition floor), `Names` (Tolerant, vowel classes, particles moved, glued splitting,
+`-sen` encoded like `-se`, token order ignored, transposition floor 0.85) and `Words` (Strict, vowel
+classes, no particle handling, token order respected, no transposition floor).
 
 #### Scenario: Names preset
 - **WHEN** `DutchFuzzyOptions.Names` is inspected
-- **THEN** it uses the `Tolerant` profile with `EncodeVowels`, `StripNamePrefixes`, `SplitGluedNamePrefixes`, `MergeSeSenEndings` and `IgnoreTokenOrder` all true
+- **THEN** it uses the `Tolerant` profile with `EncodeVowels`, `StripNamePrefixes`, `SplitGluedNamePrefixes`, `MergeSeSenEndings` and `IgnoreTokenOrder` all true, and `TranspositionFloor` 0.85
 
 #### Scenario: Words preset
 - **WHEN** `DutchFuzzyOptions.Words` is inspected
-- **THEN** it uses the `Strict` profile with `EncodeVowels` true and `StripNamePrefixes`, `SplitGluedNamePrefixes`, `MergeSeSenEndings` and `IgnoreTokenOrder` all false
+- **THEN** it uses the `Strict` profile with `EncodeVowels` true, `StripNamePrefixes`, `SplitGluedNamePrefixes`, `MergeSeSenEndings` and `IgnoreTokenOrder` all false, and `TranspositionFloor` 0
 
 #### Scenario: Singletons
 - **WHEN** a preset property is read twice
@@ -50,9 +52,9 @@ order ignored) and `Words` (Strict, vowel classes, no particle handling, token o
 
 ### Requirement: Invalid options are rejected
 `Validate` SHALL throw `InvalidOperationException` when a weight is negative or not finite, when the
-weights do not sum to a finite positive number, when `IdenticalKeyFloor` or `DefaultThreshold` is
-outside [0, 1], when a phoneme penalty is outside [0, 1), when the profile is not a defined value, or
-when `MaxKeyLength` is negative.
+weights do not sum to a finite positive number, when `IdenticalKeyFloor`, `TranspositionFloor` or
+`DefaultThreshold` is outside [0, 1], when a phoneme penalty is outside [0, 1), when the profile is not
+a defined value, or when `MaxKeyLength` is negative.
 
 #### Scenario: Bad weights
 - **WHEN** options with a weight of -0.1, NaN or infinity, or with all weights 0, are validated
@@ -60,6 +62,10 @@ when `MaxKeyLength` is negative.
 
 #### Scenario: Bad penalty
 - **WHEN** options with `InitialPhonemeMismatchPenalty` set to 1.0 are validated
+- **THEN** an `InvalidOperationException` is thrown
+
+#### Scenario: Bad transposition floor
+- **WHEN** options with `TranspositionFloor` set to -0.1, 1.5 or NaN are validated
 - **THEN** an `InvalidOperationException` is thrown
 
 #### Scenario: Unknown profile
