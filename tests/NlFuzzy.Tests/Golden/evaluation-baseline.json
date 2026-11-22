@@ -1,7 +1,7 @@
 {
   "preset": "Names",
   "threshold": 0.82,
-  "reason": "Initial baseline: Names preset at 0.82 on the first labeled evaluation dataset (1,026 pairs), before any retuning.",
+  "reason": "MergeSeSenEndings in Names: patronymic-se-sen 0 -\u003E 25 of 25; holdout F1 0.904 -\u003E 0.914.",
   "passes": {
     "holdout": {
       "c-k": 6,
@@ -24,7 +24,7 @@
       "nm-vowel": 12,
       "particle-glued": 7,
       "particle-separated": 8,
-      "patronymic-se-sen": 0,
+      "patronymic-se-sen": 3,
       "ph-th-gh": 10,
       "surname-variant": 7,
       "token-order": 12,
@@ -49,12 +49,12 @@
       "nm-same-prefix": 36,
       "nm-short": 23,
       "nm-unrelated": 38,
-      "nm-vowel": 22,
+      "nm-vowel": 23,
       "particle-glued": 26,
       "particle-separated": 17,
-      "patronymic-se-sen": 0,
+      "patronymic-se-sen": 22,
       "ph-th-gh": 19,
-      "surname-variant": 19,
+      "surname-variant": 18,
       "token-order": 23,
       "typo": 12,
       "ui-uy-uij": 23
@@ -62,14 +62,14 @@
   },
   "overall": {
     "holdout": {
-      "precision": 0.9359,
-      "recall": 0.8743,
-      "f1": 0.904
+      "precision": 0.9371,
+      "recall": 0.8922,
+      "f1": 0.9141
     },
     "tune": {
-      "precision": 0.9618,
-      "recall": 0.8818,
-      "f1": 0.9201
+      "precision": 0.9658,
+      "recall": 0.9278,
+      "f1": 0.9464
     }
   }
 }
