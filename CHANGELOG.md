@@ -66,6 +66,16 @@ eerste publicatie op nuget.org.
 
 ### Opgelost
 
+- **Aaneengeschreven tussenvoegsels werden van gewone namen afgesplitst.** Met
+  `SplitGluedNamePrefixes = true` (de preset `Names`) werd `Dekker` tot `kker de`, `Vanessa` tot
+  `essa van` en `Dennis` tot `nis den`, wat onzinnige sleutels opleverde (`Dekker` en `Decker` kregen
+  allebei `K2R T2`). Een tussenvoegsel wordt nu niet meer afgesplitst als de rest met een dubbele
+  medeklinker of `ck` begint, en een handgemaakte lijst van voornamen, plaatsnamen en familienamen
+  (`Vanessa`, `Dennis`, `Verena`, `Deventer`, `Dendermonde`, `Tervuren`, `Derksen`, …) wordt nooit
+  gesplitst. `Devos`, `Desmet`, `Vanhee`, `Verbrugghe` en `Vandenbroecke` splitsen zoals voorheen.
+  **BREAKING (fonetische sleutels):** de sleutels veranderen voor elke invoer die voorheen ten
+  onrechte gesplitst werd, maar alleen met `SplitGluedNamePrefixes = true`, dus in de preset `Names`.
+  `Default` en `Words` produceren dezelfde sleutels als voorheen.
 - **Unicode-normalisatie stond in een onveilige volgorde.** Speciale tekens werden uitgebreid
   vóór lowercasing en Unicode-decompositie, waardoor tekens die pas daarna ontstaan werden
   weggefilterd: `"STRAẞE"` werd `"stra e"` in plaats van `"strasse"` en `"ǽgir"` werd `"gir"` in

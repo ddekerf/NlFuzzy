@@ -71,6 +71,13 @@ Lijsten van Nederlandse en Vlaamse tussenvoegsels (`van`, `van der`, `de`, `ten`
 algemeen bekende taalfeiten; de lijst is met de hand samengesteld en niet uit een bestaand bestand
 gekopieerd.
 
+Hetzelfde geldt voor de lijst van tokens die nooit gesplitst worden (`NeverSplit` in
+`DutchAffixes`): gangbare Nederlandse en Vlaamse voornamen (`Vanessa`, `Dennis`, `Verena`, …),
+gemeenten en plaatsen (`Deventer`, `Dendermonde`, `Tervuren`, …) en enkele familienamen
+(`Derksen`, `Denissen`) die met een tussenvoegselspelling beginnen zonder er een te bevatten. Namen en
+plaatsnamen zijn feiten; de lijst is met de hand samengesteld uit algemeen bekende, openbare namen en
+niet overgenomen uit een namen- of plaatsnamenbestand.
+
 ### Gouden dataset (`tests/NlFuzzy.Tests/Golden`)
 
 De positieve en negatieve naamparen zijn met de hand samengesteld uit gangbare Nederlandse en

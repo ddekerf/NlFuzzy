@@ -220,6 +220,12 @@ aaneengeschreven tussenvoegsels:
 | `Desmet` / `De Smet` | 0.451 | 1.000 |
 | `Maes` / `Moes` | 0.900 | 0.664 |
 
+Het splitsen is begrensd: een tussenvoegsel wordt niet afgesplitst als de rest met een dubbele
+medeklinker of met `ck` begint (`Dekker`, `Decker` blijven heel), en een handgemaakte lijst van
+voornamen, plaatsnamen en familienamen (`Vanessa`, `Dennis`, `Deventer`, `Derksen`, …) wordt nooit
+gesplitst. Echte aaneengeschreven familienamen zoals `Devos`, `Vanhee` en `Verbrugghe` worden wel
+gewoon gesplitst.
+
 Eigen instellingen maak je met een `with`-expressie:
 
 ```csharp

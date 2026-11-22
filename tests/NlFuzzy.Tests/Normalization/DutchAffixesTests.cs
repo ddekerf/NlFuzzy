@@ -88,4 +88,68 @@ public class DutchAffixesTests
     {
         Assert.Equal("jan van den broecke", DutchAffixes.SplitGluedPrefixes("jan vandenbroecke"));
     }
+
+    [Theory]
+    [InlineData("dekker")]
+    [InlineData("decker")]
+    [InlineData("dekkers")]
+    [InlineData("vanniekerk")]
+    [InlineData("terra")]
+    public void SplitGluedPrefixes_DoesNotSplitOffAStemThatNoDutchWordStartsWith(string token)
+    {
+        // Doubled consonants and "ck" never start a Dutch word, so "de|kker", "de|cker",
+        // "van|niekerk" is fine but "ter|ra" is not.
+        var expected = token == "vanniekerk" ? "van niekerk" : token;
+
+        Assert.Equal(expected, DutchAffixes.SplitGluedPrefixes(token));
+    }
+
+    [Theory]
+    [InlineData("devos", "de vos")]
+    [InlineData("dewit", "de wit")]
+    [InlineData("debruyne", "de bruyne")]
+    [InlineData("desmet", "de smet")]
+    [InlineData("vanhee", "van hee")]
+    [InlineData("verbrugghe", "van der brugghe")]
+    [InlineData("vandenbroecke", "van den broecke")]
+    public void SplitGluedPrefixes_StillSplitsGluedSurnames(string token, string expected)
+    {
+        Assert.Equal(expected, DutchAffixes.SplitGluedPrefixes(token));
+    }
+
+    [Theory]
+    [InlineData("vanessa")]
+    [InlineData("dennis")]
+    [InlineData("denise")]
+    [InlineData("delia")]
+    [InlineData("verena")]
+    [InlineData("veronique")]
+    [InlineData("tenzing")]
+    [InlineData("deventer")]
+    [InlineData("dendermonde")]
+    [InlineData("tervuren")]
+    [InlineData("derksen")]
+    [InlineData("denissen")]
+    public void SplitGluedPrefixes_NeverSplitsListedNames(string token)
+    {
+        Assert.Equal(token, DutchAffixes.SplitGluedPrefixes(token));
+        Assert.Equal(token, DutchTextNormalizer.Instance.Normalize(token, DutchFuzzyOptions.Names));
+    }
+
+    [Fact]
+    public void SplitGluedPrefixes_NeverSplitListOnlyHoldsTokensThatWouldOtherwiseSplit()
+    {
+        // A listed token that the rules would not split anyway is dead weight; keep the list honest.
+        foreach (var token in DutchAffixes.NeverSplitTokens)
+        {
+            Assert.NotEqual(token, DutchAffixes.SplitGluedPrefixesIgnoringExceptions(token));
+        }
+    }
+
+    [Fact]
+    public void SplitGluedPrefixes_FallsBackToAShorterPrefixWhenALongerOneIsRejected()
+    {
+        // "vande" leaves "llen", which is rejected; "van" leaves "dellen", which is fine.
+        Assert.Equal("van dellen", DutchAffixes.SplitGluedPrefixes("vandellen"));
+    }
 }
