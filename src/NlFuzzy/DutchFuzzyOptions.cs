@@ -23,7 +23,8 @@ public sealed record DutchFuzzyOptions
         StripNamePrefixes = true,
         SplitGluedNamePrefixes = true,
         EncodeVowels = true,
-        MergeSeSenEndings = true
+        MergeSeSenEndings = true,
+        TranspositionFloor = 0.85
     };
 
     /// <summary>Options tuned for comparing ordinary Dutch words rather than proper names.</summary>
@@ -91,6 +92,15 @@ public sealed record DutchFuzzyOptions
     public double IdenticalKeyFloor { get; init; } = 0.90;
 
     /// <summary>
+    /// Score floor applied when the two normalized values are identical except for one pair of
+    /// adjacent letters in swapped order, inside a word of five or more letters ("Kuipers" versus
+    /// "Kuipres"): a typical typing error. Shorter words are left alone, because a swap there often
+    /// spells another name ("Born" versus "Bron"). 0 disables the floor. Default: 0 (0.85 in
+    /// <see cref="Names"/>).
+    /// </summary>
+    public double TranspositionFloor { get; init; }
+
+    /// <summary>
     /// Threshold used by <c>DutchFuzzyEquals</c>, the ranking helpers and
     /// <see cref="Indexing.DutchFuzzyIndex{T}"/> whenever the caller omits the threshold argument.
     /// Default: 0.82.
@@ -140,6 +150,7 @@ public sealed record DutchFuzzyOptions
         }
 
         EnsureUnitInterval(IdenticalKeyFloor, nameof(IdenticalKeyFloor));
+        EnsureUnitInterval(TranspositionFloor, nameof(TranspositionFloor));
         EnsureUnitInterval(DefaultThreshold, nameof(DefaultThreshold));
         EnsureFraction(InitialPhonemeMismatchPenalty, nameof(InitialPhonemeMismatchPenalty));
         EnsureFraction(FinalPhonemeMismatchPenalty, nameof(FinalPhonemeMismatchPenalty));
