@@ -183,4 +183,43 @@ public class DutchPhoneticEncoderTests
     {
         Assert.Equal(DutchPhoneticEncoder.Default.Encode("kuipers"), Tolerant.Encode("kuipers"));
     }
+
+    [Theory]
+    [InlineData("Willemsen", "Willemse")]
+    [InlineData("Pietersen", "Pieterse")]
+    [InlineData("Hendriksen", "Hendrikse")]
+    [InlineData("Hansen", "Hanzen")]
+    [InlineData("Gijsen", "Gysen")]
+    public void MergeSeSenEndings_GivesThePatronymicFormsTheSameKey(string a, string b)
+    {
+        Assert.Equal(Names.Encode(a), Names.Encode(b));
+    }
+
+    [Fact]
+    public void MergeSeSenEndings_KeepsTheSFormApart()
+    {
+        Assert.NotEqual(Names.Encode("Willems"), Names.Encode("Willemse"));
+        Assert.NotEqual(Names.Encode("Willems"), Names.Encode("Willemsen"));
+    }
+
+    [Fact]
+    public void MergeSeSenEndings_LeavesShortTokensAlone()
+    {
+        Assert.NotEqual(Names.Encode("Esen"), Names.Encode("Ese"));
+        Assert.EndsWith("N", Names.Encode("Isen"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MergeSeSenEndings_IsOffInTheDefaultPreset()
+    {
+        // The key Default produced before MergeSeSenEndings existed.
+        Assert.Equal("FLMSN", Tolerant.Encode("Willemsen"));
+        Assert.NotEqual(Tolerant.Encode("Willemsen"), Tolerant.Encode("Willemse"));
+    }
+
+    [Fact]
+    public void MergeSeSenEndings_AppliesPerToken()
+    {
+        Assert.Equal(Names.Encode("Jan Willemse"), Names.Encode("Jan Willemsen"));
+    }
 }

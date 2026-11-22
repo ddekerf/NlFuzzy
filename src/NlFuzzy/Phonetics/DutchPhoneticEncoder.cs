@@ -105,8 +105,17 @@ public sealed class DutchPhoneticEncoder : IPhoneticEncoder
         return tokens.Count == 0 ? string.Empty : string.Join(" ", tokens);
     }
 
+    /// <summary>The minimum token length for reading "-sen"/"-zen" as "-se"/"-ze".</summary>
+    private const int MinimumSeSenTokenLength = 5;
+
     private string EncodeToken(string token, ICollection<int>? usedRuleIds)
     {
+        if (_options.MergeSeSenEndings && IsSenOrZenEnding(token))
+        {
+            // Patronymics alternate between -sen and -se (Willemsen, Willemse): drop the final n.
+            token = token.Substring(0, token.Length - 1);
+        }
+
         var builder = new StringBuilder(token.Length + 4);
         var index = 0;
 
@@ -183,6 +192,16 @@ public sealed class DutchPhoneticEncoder : IPhoneticEncoder
         }
 
         return builder.ToString();
+    }
+
+    private static bool IsSenOrZenEnding(string token)
+    {
+        var length = token.Length;
+
+        return length >= MinimumSeSenTokenLength
+               && token[length - 1] == 'n'
+               && token[length - 2] == 'e'
+               && (token[length - 3] == 's' || token[length - 3] == 'z');
     }
 
     /// <summary>True when <paramref name="c"/> is one of the vowel class digits 1..7.</summary>
