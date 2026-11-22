@@ -1,0 +1,75 @@
+{
+  "preset": "Names",
+  "threshold": 0.82,
+  "reason": "Initial baseline: Names preset at 0.82 on the first labeled evaluation dataset (1,026 pairs), before any retuning.",
+  "passes": {
+    "holdout": {
+      "c-k": 6,
+      "ch-g": 9,
+      "ck-ks-x": 8,
+      "diacritics": 5,
+      "double-consonant": 6,
+      "double-vowel": 6,
+      "elided-article": 8,
+      "final-devoicing": 9,
+      "first-name": 14,
+      "historic-vowel": 9,
+      "ij-ei-y": 7,
+      "nm-derived": 11,
+      "nm-final-sound": 23,
+      "nm-first-sound": 7,
+      "nm-same-prefix": 13,
+      "nm-short": 20,
+      "nm-unrelated": 14,
+      "nm-vowel": 12,
+      "particle-glued": 7,
+      "particle-separated": 8,
+      "patronymic-se-sen": 0,
+      "ph-th-gh": 10,
+      "surname-variant": 7,
+      "token-order": 12,
+      "typo": 4,
+      "ui-uy-uij": 11
+    },
+    "tune": {
+      "c-k": 31,
+      "ch-g": 16,
+      "ck-ks-x": 26,
+      "diacritics": 25,
+      "double-consonant": 31,
+      "double-vowel": 27,
+      "elided-article": 12,
+      "final-devoicing": 23,
+      "first-name": 19,
+      "historic-vowel": 22,
+      "ij-ei-y": 32,
+      "nm-derived": 33,
+      "nm-final-sound": 79,
+      "nm-first-sound": 45,
+      "nm-same-prefix": 36,
+      "nm-short": 23,
+      "nm-unrelated": 38,
+      "nm-vowel": 22,
+      "particle-glued": 26,
+      "particle-separated": 17,
+      "patronymic-se-sen": 0,
+      "ph-th-gh": 19,
+      "surname-variant": 19,
+      "token-order": 23,
+      "typo": 12,
+      "ui-uy-uij": 23
+    }
+  },
+  "overall": {
+    "holdout": {
+      "precision": 0.9359,
+      "recall": 0.8743,
+      "f1": 0.904
+    },
+    "tune": {
+      "precision": 0.9618,
+      "recall": 0.8818,
+      "f1": 0.9201
+    }
+  }
+}
