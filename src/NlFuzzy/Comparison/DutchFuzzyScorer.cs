@@ -229,11 +229,11 @@ public sealed class DutchFuzzyScorer
         else
         {
             score = ApplyAnchorPenalties(score, keyA, keyB);
+        }
 
-            if (_options.TranspositionFloor > 0d && IsSingleAdjacentSwap(normalizedA, normalizedB))
-            {
-                score = Math.Max(score, _options.TranspositionFloor);
-            }
+        if (_options.TranspositionFloor > 0d && IsSingleAdjacentSwap(normalizedA, normalizedB))
+        {
+            score = Math.Max(score, _options.TranspositionFloor);
         }
 
         return MathCompat.Clamp(score, 0d, 1d);
