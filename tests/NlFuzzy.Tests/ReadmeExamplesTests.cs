@@ -132,6 +132,7 @@ public class ReadmeExamplesTests
     [InlineData("Luycks", "Luiks", "LKS")]
     [InlineData("Smit", "Smid", "SMT")]
     [InlineData("vrede", "wrede", "FRT")]
+    [InlineData("D'Hondt", "De Hondt", "ANT T")]
     public void Sectie4_SpellingvariantenTabel(string a, string b, string sleutel)
     {
         Assert.Equal(sleutel, DutchFuzzy.PhoneticKey(a));

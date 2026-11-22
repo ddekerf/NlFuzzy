@@ -146,6 +146,25 @@ public class DutchAffixesTests
         }
     }
 
+    [Theory]
+    [InlineData("dhondt", "de hondt")]
+    [InlineData("dhaene", "de haene")]
+    [InlineData("dhooghe", "de hooghe")]
+    [InlineData("dhr", "dhr")]
+    [InlineData("dhont", "de hont")]
+    [InlineData("dhae", "dhae")]
+    public void SplitGluedPrefixes_SplitsAGluedDhAsTheParticleDe(string token, string expected)
+    {
+        Assert.Equal(expected, DutchAffixes.SplitGluedPrefixes(token));
+    }
+
+    [Fact]
+    public void Normalize_SplitsAGluedDhOnlyWhenGluedSplittingIsEnabled()
+    {
+        Assert.Equal("hondt de", DutchTextNormalizer.Instance.Normalize("Dhondt", DutchFuzzyOptions.Names));
+        Assert.Equal("dhondt", DutchTextNormalizer.Instance.Normalize("Dhondt", DutchFuzzyOptions.Default));
+    }
+
     [Fact]
     public void SplitGluedPrefixes_FallsBackToAShorterPrefixWhenALongerOneIsRejected()
     {

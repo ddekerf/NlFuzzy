@@ -90,6 +90,27 @@ public class PropertyTests
     }
 
     [Fact]
+    public void Normalization_IsIdempotentForElidedArticles()
+    {
+        var random = new Random(11);
+        var apostrophes = new[] { "'", "’", "‘", "`", "´" };
+
+        for (var i = 0; i < Iterations; i++)
+        {
+            var options = Profiles[random.Next(Profiles.Length)];
+            var input = RandomText(random, 8)
+                        + (random.Next(2) == 0 ? " d" : " D")
+                        + apostrophes[random.Next(apostrophes.Length)]
+                        + RandomText(random, 10);
+
+            var once = DutchTextNormalizer.Instance.Normalize(input, options);
+            var twice = DutchTextNormalizer.Instance.Normalize(once, options);
+
+            Assert.Equal(once, twice);
+        }
+    }
+
+    [Fact]
     public void Normalization_IsIdempotent()
     {
         var random = new Random(3);

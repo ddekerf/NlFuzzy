@@ -188,6 +188,10 @@ public static class DutchAffixes
     /// "decker" stay intact. When a prefix is rejected, shorter prefixes are still tried
     /// ("vandellen" becomes "van dellen").
     /// </para>
+    /// <para>
+    /// A token of five or more letters that starts with "dh" + vowel is read as the apostrophe-less
+    /// form of the elided article: "dhondt" becomes "de hondt", like "D'Hondt".
+    /// </para>
     /// </remarks>
     public static string SplitGluedPrefixes(string value)
     {
@@ -252,8 +256,20 @@ public static class DutchAffixes
             return prefix.Value + " " + token.Substring(glued.Length);
         }
 
+        // "Dhondt", "Dhaene": the apostrophe-less spelling of the elided article in D'Hondt.
+        if (token.Length >= MinimumElidedDhLength
+            && token[0] == 'd'
+            && token[1] == 'h'
+            && IsVowel(token[2]))
+        {
+            return "de " + token.Substring(1);
+        }
+
         return token;
     }
+
+    /// <summary>The minimum token length for splitting "dh" + vowel into "de h…".</summary>
+    private const int MinimumElidedDhLength = 5;
 
     /// <summary>
     /// False when the stem that would remain after a glued prefix starts in a way no Dutch word

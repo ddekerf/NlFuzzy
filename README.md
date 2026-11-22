@@ -169,6 +169,7 @@ De encoder laat de volgende paren op dezelfde sleutel uitkomen (profiel `Toleran
 | cks / ks | `Luycks` = `Luiks` | `LKS` |
 | d / t (finale verstemlozing) | `Smit` = `Smid` | `SMT` |
 | v / w | `vrede` = `wrede` | `FRT` |
+| d' / de (elisie) | `D'Hondt` = `De Hondt` | `ANT T` |
 | ou / au / auw / ouw | `kauw` = `kou` (klasse 7) | — |
 
 Het uitvoeralfabet is `P B T D K G F V W S Z X J L M N R H Q` plus de klinkerklassen `1`-`7`
