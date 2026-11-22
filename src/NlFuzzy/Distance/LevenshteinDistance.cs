@@ -43,8 +43,8 @@ public sealed class LevenshteinDistance : IStringDistance
             return 0;
         }
 
-        var previous = new int[b.Length + 1];
-        var current = new int[b.Length + 1];
+        var previous = ScratchBuffers.Ints(0, b.Length + 1);
+        var current = ScratchBuffers.Ints(1, b.Length + 1);
 
         for (var j = 0; j <= b.Length; j++)
         {

@@ -54,9 +54,38 @@ eerste publicatie op nuget.org.
 - **Ranking gebruikt een begrensde top-k-heap.** Bij een positieve `take` bewaren
   `FuzzyMatchDutch` en `DutchFuzzyIndex<T>.Search` niet langer alle kwalificerende treffers om die
   volledig te sorteren; het geheugengebruik is nu `O(take)` in plaats van `O(n)`.
+- **De score negeert de woordvolgorde.** Nieuwe optie `DutchFuzzyOptions.IgnoreTokenOrder`, standaard
+  `true` in `Default` en `Names` en `false` in `Words`. `Jan Bakker` tegenover `Bakker, Jan` scoorde
+  0.29 en scoort nu 0.97; een identieke invoer blijft 1.0 scoren en rangschikt dus hoger. Dit geldt
+  voor `Similarity`, `AreEquivalent`/`DutchFuzzyEquals`, `FuzzyMatchDutch`, `BestDutchMatch` en
+  `DutchFuzzyIndex<T>`, die in `Blocked`- en `BlockedOnly`-modus nu ook een blok op de
+  volgorde-onafhankelijke sleutel bijhoudt. Scores voor invoer met meerdere woorden kunnen alleen
+  stijgen, dus met een afgestelde drempel kun je extra treffers krijgen; zet
+  `IgnoreTokenOrder = false` voor het oude gedrag. Fonetische sleutels, `SoundsLike` en
+  `DutchPhoneticEqualityComparer` veranderen niet. (Score-wijziging, geen sleutelwijziging: minor.)
 
 ### Opgelost
 
+- **`D'Hondt` en `Dhondt` matchten niet met `De Hondt`.** De apostrof werd een spatie, waardoor
+  een losse `d` overbleef die geen tussenvoegsel is: `D'Hondt` tegenover `De Hondt` scoorde 0.28 en
+  `Dhondt` tegenover `De Hondt` 0.35 (preset `Names`). Een `d` vooraan een woord, direct gevolgd door
+  een apostrof (`'`, `’`, `‘`, `` ` `` of `´`) en minstens drie letters, wordt nu gelezen als het
+  tussenvoegsel `de`, in elke preset. Een initiaal (`D. Jansen`) en `d'r` blijven ongemoeid. Met
+  `SplitGluedNamePrefixes = true` wordt bovendien een woord van minstens vijf letters dat met `dh` +
+  klinker begint gesplitst als `de h…`, zodat `Dhondt`, `D'Hondt` en `De Hondt` dezelfde sleutel
+  krijgen. **BREAKING (fonetische sleutels):** sleutels veranderen voor elke invoer met `d'` voor een
+  naam, in alle presets (`Default`, `Names`, `Words`), en voor `dh`-namen in de presets die
+  aaneengeschreven tussenvoegsels splitsen (`Names`).
+- **Aaneengeschreven tussenvoegsels werden van gewone namen afgesplitst.** Met
+  `SplitGluedNamePrefixes = true` (de preset `Names`) werd `Dekker` tot `kker de`, `Vanessa` tot
+  `essa van` en `Dennis` tot `nis den`, wat onzinnige sleutels opleverde (`Dekker` en `Decker` kregen
+  allebei `K2R T2`). Een tussenvoegsel wordt nu niet meer afgesplitst als de rest met een dubbele
+  medeklinker of `ck` begint, en een handgemaakte lijst van voornamen, plaatsnamen en familienamen
+  (`Vanessa`, `Dennis`, `Verena`, `Deventer`, `Dendermonde`, `Tervuren`, `Derksen`, …) wordt nooit
+  gesplitst. `Devos`, `Desmet`, `Vanhee`, `Verbrugghe` en `Vandenbroecke` splitsen zoals voorheen.
+  **BREAKING (fonetische sleutels):** de sleutels veranderen voor elke invoer die voorheen ten
+  onrechte gesplitst werd, maar alleen met `SplitGluedNamePrefixes = true`, dus in de preset `Names`.
+  `Default` en `Words` produceren dezelfde sleutels als voorheen.
 - **Unicode-normalisatie stond in een onveilige volgorde.** Speciale tekens werden uitgebreid
   vóór lowercasing en Unicode-decompositie, waardoor tekens die pas daarna ontstaan werden
   weggefilterd: `"STRAẞE"` werd `"stra e"` in plaats van `"strasse"` en `"ǽgir"` werd `"gir"` in

@@ -21,8 +21,8 @@ public class DutchTextNormalizerTests
     [InlineData("Jan   Willem", "jan willem")]
     [InlineData("Sint-Niklaas", "sint niklaas")]
     [InlineData("Bergen op Zoom", "bergen op zoom")]
-    [InlineData("D'Hondt", "d hondt")]
-    [InlineData("D\u2019Hondt", "d hondt")]
+    [InlineData("D'Hondt", "de hondt")]
+    [InlineData("D\u2019Hondt", "de hondt")]
     [InlineData("O'Brien", "o brien")]
     [InlineData("Jan, Willem", "jan willem")]
     [InlineData("A.J. Kuipers", "a j kuipers")]
@@ -80,6 +80,42 @@ public class DutchTextNormalizerTests
     public void Normalize_HandlesApostropheForms(string input, string expected)
     {
         Assert.Equal(expected, Normalizer.Normalize(input, Plain));
+    }
+
+    [Theory]
+    [InlineData("D'Hondt", "hondt de")]
+    [InlineData("D’Haene", "haene de")]
+    [InlineData("D‘Haene", "haene de")]
+    [InlineData("D`Haene", "haene de")]
+    [InlineData("D´Haene", "haene de")]
+    [InlineData("Marie D'Hooghe", "marie de hooghe")]
+    [InlineData("Van D'Hondt", "hondt van de")]
+    public void Normalize_ReadsAnElidedDAsTheParticleDe(string input, string expected)
+    {
+        Assert.Equal(expected, Normalizer.Normalize(input, DutchFuzzyOptions.Default));
+    }
+
+    [Fact]
+    public void Normalize_ElidedDMatchesTheSeparatedForm()
+    {
+        Assert.Equal(
+            Normalizer.Normalize("De Hondt", DutchFuzzyOptions.Names),
+            Normalizer.Normalize("D'Hondt", DutchFuzzyOptions.Names));
+    }
+
+    [Theory]
+    [InlineData("D. Jansen", "d jansen")]
+    [InlineData("A.D. Jansen", "a d jansen")]
+    [InlineData("Ad'Hondt", "ad hondt")]
+    public void Normalize_DoesNotReadAnInitialDAsAnArticle(string input, string expected)
+    {
+        Assert.Equal(expected, Normalizer.Normalize(input, Plain));
+    }
+
+    [Fact]
+    public void Normalize_DoesNotExpandAShortElision()
+    {
+        Assert.Equal("d r", Normalizer.Normalize("d'r", DutchFuzzyOptions.Words));
     }
 
     [Theory]

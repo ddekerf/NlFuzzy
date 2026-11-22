@@ -1,0 +1,30 @@
+# Tasks
+
+## 1. Option
+
+- [x] 1.1 Add `IgnoreTokenOrder` (default `true`) to `DutchFuzzyOptions`, set it to `false` in the `Words` preset, and add `DutchFuzzyOptionsTests` asserting the value for all three presets; verify the tests pass
+- [x] 1.2 Update `tests/NlFuzzy.Tests/Api/PublicApi.approved.txt` for the new property; verify `PublicApiTests` passes
+
+## 2. Scoring
+
+- [x] 2.1 Add `DutchFuzzyScorerTests` for the spec scenarios (`Jan Bakker`/`Bakker, Jan` ≥ 0.95, `Piet de Vries`/`de Vries, Piet` ≥ 0.95, `Jan Kuipers`/`Cuypers, Jan` ≥ 0.82, `Words` preset unchanged, single-token pairs unchanged); confirm they fail on the current code
+- [x] 2.2 Extend `PreparedText` with the canonical normalized text and key, built in `Prepare` by sorting (normalized, key) token pairs by key token, only for multi-token values when the option is on; verify with a unit test on `Prepare` for `bakker jan` and `jan bakker`
+- [x] 2.3 Score max(ordered, canonical × 0.97) in `DutchFuzzyScorer.Score` when both sides have canonical forms; verify the 2.1 tests pass
+- [x] 2.4 Add an `ExtensionsTests` case where `FuzzyMatchDutch` ranks `Jan Bakker` (1.0) above `Bakker Jan` (< 1.0); verify it passes
+- [x] 2.5 Extend `PropertyTests` with multi-token inputs checking [0, 1], symmetry and "enabled ≥ disabled"; verify the property run is green
+
+## 3. Index
+
+- [x] 3.1 Add `DutchFuzzyIndexTests` asserting that `Exact` mode equals `FuzzyMatchDutch` on reordered data, and that `BlockedOnly` finds `Bakker, Jan` for `Jan Bakker` among 1,000 unrelated names; confirm the `BlockedOnly` test fails first
+- [x] 3.2 Register multi-token items under their canonical key and look up the query's canonical key in `CollectCandidates` when the option is on; verify the 3.1 tests and the existing parity tests pass
+
+## 4. Performance and docs
+
+- [x] 4.1 Run `dotnet run --project bench/NlFuzzy.Benchmarks -c Release -- --filter '*'` before and after; verify multi-token scoring regresses by at most 2× and single-token scoring is unchanged, and update README §9 with the new numbers
+  - Measured with the `ScorerBenchmarks` and `IndexBenchmarks` filters, `--job short --inProcess` (BenchmarkDotNet's generated project hit the Windows path limit). The first implementation came in at 2.1× (`Exact`) and 2.6× (`Blocked`); after the exact optimizations (precomputed Dice bigrams, reusable Jaro-Winkler/Levenshtein buffers, skipping a canonical score that cannot win) it is ~1.3× (`Exact`), ~1.0× (`Blocked`), ~1.25× (linear scan), with single-token scoring slightly faster. A 20,000-pair differential run against the previous commit showed no score changes outside the reordered case.
+- [x] 4.2 Add a README §3 example for "Achternaam, Voornaam" matching, with a matching `ReadmeExamplesTests` case, and a §6 note that keys and `SoundsLike` stay order-sensitive; verify `ReadmeExamplesTests` passes
+- [x] 4.3 Add a `[Unreleased]` CHANGELOG entry under "Gewijzigd" describing the scoring change and the opt-out; verify it names `IgnoreTokenOrder` and the affected presets
+
+## 5. Integration check
+
+- [x] 5.1 Run the full `dotnet test -c Release` suite including the golden dataset, and re-run the review's name-order probe (`Jan Bakker`, `Piet de Vries`); confirm every pair scores ≥ 0.95 and no golden negative crosses the threshold

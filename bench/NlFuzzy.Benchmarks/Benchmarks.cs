@@ -49,6 +49,12 @@ public class ScorerBenchmarks
     public double Score() => _scorer.Score(Left, Right);
 
     [Benchmark]
+    public double SingleTokenScore() => _scorer.Score("Schoenmakers", "Schoonmakers");
+
+    [Benchmark]
+    public double ReorderedScore() => _scorer.Score("Marie Vandenbroecke", "Vandenbroecke, Marie");
+
+    [Benchmark]
     public int Levenshtein() => LevenshteinDistance.Compute(Left, Right);
 
     [Benchmark]

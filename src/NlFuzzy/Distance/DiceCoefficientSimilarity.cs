@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace NlFuzzy.Distance;
 
@@ -22,44 +21,92 @@ public sealed class DiceCoefficientSimilarity : IStringSimilarity
             throw new ArgumentNullException(nameof(b));
         }
 
+        if (a.Length < 2 || b.Length < 2)
+        {
+            return ShortInputSimilarity(a, b);
+        }
+
+        return Similarity(a.Length, SortedBigrams(a), b.Length, SortedBigrams(b));
+    }
+
+    /// <summary>
+    /// Returns the bigrams of <paramref name="value"/>, packed into an int (two UTF-16 code units)
+    /// and sorted, so that repeated scoring can intersect them without hashing or allocating.
+    /// Returns an empty array for strings shorter than two characters.
+    /// </summary>
+    internal static int[] SortedBigrams(string value)
+    {
+        if (value.Length < 2)
+        {
+            return Array.Empty<int>();
+        }
+
+        var bigrams = new int[value.Length - 1];
+
+        for (var i = 0; i < bigrams.Length; i++)
+        {
+            bigrams[i] = (value[i] << 16) | value[i + 1];
+        }
+
+        Array.Sort(bigrams);
+
+        return bigrams;
+    }
+
+    /// <summary>
+    /// Dice similarity from precomputed <see cref="SortedBigrams"/>. Repeated bigrams count as
+    /// often as they occur in both strings (the minimum of both counts).
+    /// </summary>
+    internal static double Similarity(string a, int[] bigramsA, string b, int[] bigramsB)
+    {
+        if (a.Length < 2 || b.Length < 2)
+        {
+            return ShortInputSimilarity(a, b);
+        }
+
+        return Similarity(a.Length, bigramsA, b.Length, bigramsB);
+    }
+
+    private static double ShortInputSimilarity(string a, string b)
+    {
         if (a.Length == 0 && b.Length == 0)
         {
             return 1d;
         }
 
-        if (a.Length < 2 || b.Length < 2)
-        {
-            return string.Equals(a, b, StringComparison.Ordinal) ? 1d : 0d;
-        }
+        return string.Equals(a, b, StringComparison.Ordinal) ? 1d : 0d;
+    }
 
-        var first = BuildBigrams(a);
-        var second = BuildBigrams(b);
+    private static double Similarity(int lengthA, int[] bigramsA, int lengthB, int[] bigramsB)
+    {
         var intersection = 0;
+        var i = 0;
+        var j = 0;
 
-        foreach (var pair in first)
+        // Both arrays are sorted, so a merge counts min(countA, countB) for every bigram.
+        while (i < bigramsA.Length && j < bigramsB.Length)
         {
-            if (second.TryGetValue(pair.Key, out var count))
+            var left = bigramsA[i];
+            var right = bigramsB[j];
+
+            if (left == right)
             {
-                intersection += Math.Min(pair.Value, count);
+                intersection++;
+                i++;
+                j++;
+            }
+            else if (left < right)
+            {
+                i++;
+            }
+            else
+            {
+                j++;
             }
         }
 
-        var total = a.Length - 1 + b.Length - 1;
+        var total = lengthA - 1 + lengthB - 1;
 
         return total == 0 ? 0d : 2d * intersection / total;
-    }
-
-    // Bigrams are packed into an int (two UTF-16 code units) to avoid allocating a string per bigram.
-    private static Dictionary<int, int> BuildBigrams(string value)
-    {
-        var result = new Dictionary<int, int>(value.Length);
-
-        for (var i = 0; i < value.Length - 1; i++)
-        {
-            var bigram = (value[i] << 16) | value[i + 1];
-            result[bigram] = result.TryGetValue(bigram, out var count) ? count + 1 : 1;
-        }
-
-        return result;
     }
 }

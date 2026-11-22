@@ -32,7 +32,7 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
             return string.Empty;
         }
 
-        var folded = FoldForPhonetics(value, options.RemoveDiacritics);
+        var folded = ExpandElidedArticles(FoldForPhonetics(value, options.RemoveDiacritics));
         var cleaned = KeepLettersAndSpaces(folded);
 
         if (cleaned.Length == 0)
@@ -68,6 +68,68 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
         var folded = removeDiacritics ? RemoveDiacritics(lowered) : lowered;
 
         return ExpandSpecialCharacters(folded);
+    }
+
+    /// <summary>
+    /// Rewrites the elided article <c>d'</c> ("D'Hondt") to <c>de </c>, so that it becomes the
+    /// particle "de" instead of a lone "d". This must run while the apostrophe still exists, because
+    /// the apostrophe is the only thing that tells the article apart from an initial ("D. Jansen").
+    /// The <c>d</c> must start a token, and at least three letters must follow the apostrophe, so
+    /// that colloquial "d'r" is left alone.
+    /// </summary>
+    /// <param name="value">Lower-cased, folded text.</param>
+    /// <returns>The rewritten text, or <paramref name="value"/> itself when nothing changes.</returns>
+    internal static string ExpandElidedArticles(string value)
+    {
+        StringBuilder? builder = null;
+        var copiedUpTo = 0;
+
+        for (var i = 0; i + 1 < value.Length; i++)
+        {
+            if (value[i] != 'd' || !IsApostrophe(value[i + 1]))
+            {
+                continue;
+            }
+
+            if (i > 0 && char.IsLetter(value[i - 1]))
+            {
+                continue;
+            }
+
+            if (CountLetters(value, i + 2) < 3)
+            {
+                continue;
+            }
+
+            builder ??= new StringBuilder(value.Length + 4);
+            builder.Append(value, copiedUpTo, i - copiedUpTo).Append("de ");
+            copiedUpTo = i + 2;
+            i++;
+        }
+
+        if (builder is null)
+        {
+            return value;
+        }
+
+        builder.Append(value, copiedUpTo, value.Length - copiedUpTo);
+
+        return builder.ToString();
+    }
+
+    private static bool IsApostrophe(char c) =>
+        c is '\'' or '’' or '‘' or '`' or '´';
+
+    private static int CountLetters(string value, int start)
+    {
+        var count = 0;
+
+        while (start + count < value.Length && value[start + count] >= 'a' && value[start + count] <= 'z')
+        {
+            count++;
+        }
+
+        return count;
     }
 
     private static string ExpandSpecialCharacters(string value)

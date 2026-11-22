@@ -265,4 +265,44 @@ public class DutchFuzzyIndexTests
 
         return items;
     }
+
+    [Fact]
+    public void Search_ExactFindsReorderedNamesLikeALinearScan()
+    {
+        var items = new[]
+        {
+            new Customer(1, "Bakker, Jan"),
+            new Customer(2, "Visser, Klaas"),
+            new Customer(3, "Jan Bakkers"),
+            new Customer(4, "de Vries, Piet"),
+        };
+
+        var index = new DutchFuzzyIndex<Customer>(items, c => c.Name, DutchFuzzyOptions.Names);
+
+        var indexed = index.Search("Jan Bakker", 0.5, 0, DutchFuzzyIndexSearchMode.Exact);
+        var linear = items.FuzzyMatchDutch("Jan Bakker", c => c.Name, 0.5, 0, DutchFuzzyOptions.Names).ToList();
+
+        Assert.Equal(1, indexed[0].Value.Id);
+        Assert.Equal(
+            linear.Select(m => (m.Value.Id, Math.Round(m.Score, 12))),
+            indexed.Select(m => (m.Value.Id, Math.Round(m.Score, 12))));
+    }
+
+    [Fact]
+    public void Search_BlockedOnlyFindsAReorderedName()
+    {
+        var surnames = new[] { "Visser", "Meijer", "Smit", "Mulder", "Bos", "Vos", "Peters", "Hendriks", "Dekker", "Brouwer" };
+        var firstNames = new[] { "Klaas", "Piet", "Anna", "Sofie", "Willem" };
+
+        var items = Enumerable.Range(0, 1_000)
+            .Select(i => new Customer(i, $"{firstNames[i % firstNames.Length]} {surnames[(i / firstNames.Length) % surnames.Length]}"))
+            .Append(new Customer(5_000, "Bakker, Jan"))
+            .ToList();
+
+        var index = new DutchFuzzyIndex<Customer>(items, c => c.Name, DutchFuzzyOptions.Names);
+
+        var matches = index.Search("Jan Bakker", null, 5, DutchFuzzyIndexSearchMode.BlockedOnly);
+
+        Assert.Contains(matches, m => m.Value.Id == 5_000);
+    }
 }

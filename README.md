@@ -113,6 +113,24 @@ bool zelfde = "Meijer".DutchFuzzyEquals("Meier", threshold: null, streng); // ge
 Een drempel moet een eindig getal in `[0, 1]` zijn; `NaN`, oneindig en waarden erbuiten leveren een
 `ArgumentOutOfRangeException` op in plaats van een stil verkeerd resultaat.
 
+### 3.7 Achternaam, Voornaam
+
+Klantenbestanden zetten de achternaam vaak eerst. De score negeert standaard de volgorde van de
+woorden, zodat dezelfde persoon in een andere volgorde toch als (bijna) gelijk geldt:
+
+```csharp
+using NlFuzzy;
+
+double score = "Jan Bakker".DutchSimilarity("Bakker, Jan", DutchFuzzyOptions.Names);   // ~0.97
+bool zelfde = "Jan Kuipers".DutchFuzzyEquals("Cuypers, Jan", options: DutchFuzzyOptions.Names); // true
+
+var strikt = DutchFuzzyOptions.Names with { IgnoreTokenOrder = false };
+double volgordeTelt = "Jan Bakker".DutchSimilarity("Bakker, Jan", strikt);              // ~0.29
+```
+
+Een identieke invoer scoort 1.0 en een omgedraaide 0.97, zodat de exacte volgorde bij het
+rangschikken voorrang krijgt. De preset `Words` laat de volgorde wél meetellen.
+
 ### Bonus: ontdubbelen met de equality comparer
 
 ```csharp
@@ -151,6 +169,7 @@ De encoder laat de volgende paren op dezelfde sleutel uitkomen (profiel `Toleran
 | cks / ks | `Luycks` = `Luiks` | `LKS` |
 | d / t (finale verstemlozing) | `Smit` = `Smid` | `SMT` |
 | v / w | `vrede` = `wrede` | `FRT` |
+| d' / de (elisie) | `D'Hondt` = `De Hondt` | `ANT T` |
 | ou / au / auw / ouw | `kauw` = `kou` (klasse 7) | — |
 
 Het uitvoeralfabet is `P B T D K G F V W S Z X J L M N R H Q` plus de klinkerklassen `1`-`7`
@@ -187,11 +206,11 @@ Scores voor dezelfde paren:
 
 ### De drie presets
 
-| Preset | Profiel | `EncodeVowels` | `StripNamePrefixes` | `SplitGluedNamePrefixes` | Waarvoor |
-|---|---|---|---|---|---|
-| `DutchFuzzyOptions.Default` | Tolerant | nee | ja | nee | algemeen, hoge recall |
-| `DutchFuzzyOptions.Names` | Tolerant | ja | ja | ja | persoonsnamen, ook Vlaamse aaneengeschreven tussenvoegsels |
-| `DutchFuzzyOptions.Words` | Strict | ja | nee | nee | gewone woorden in plaats van namen |
+| Preset | Profiel | `EncodeVowels` | `StripNamePrefixes` | `SplitGluedNamePrefixes` | `IgnoreTokenOrder` | Waarvoor |
+|---|---|---|---|---|---|---|
+| `DutchFuzzyOptions.Default` | Tolerant | nee | ja | nee | ja | algemeen, hoge recall |
+| `DutchFuzzyOptions.Names` | Tolerant | ja | ja | ja | ja | persoonsnamen, ook Vlaamse aaneengeschreven tussenvoegsels |
+| `DutchFuzzyOptions.Words` | Strict | ja | nee | nee | nee | gewone woorden in plaats van namen |
 
 `Names` is de preset waartegen de gouden dataset gevalideerd is. Het verschil is groot bij
 aaneengeschreven tussenvoegsels:
@@ -201,6 +220,12 @@ aaneengeschreven tussenvoegsels:
 | `Vandenbroecke` / `Van den Broecke` | 0.268 | 1.000 |
 | `Desmet` / `De Smet` | 0.451 | 1.000 |
 | `Maes` / `Moes` | 0.900 | 0.664 |
+
+Het splitsen is begrensd: een tussenvoegsel wordt niet afgesplitst als de rest met een dubbele
+medeklinker of met `ck` begint (`Dekker`, `Decker` blijven heel), en een handgemaakte lijst van
+voornamen, plaatsnamen en familienamen (`Vanessa`, `Dennis`, `Deventer`, `Derksen`, …) wordt nooit
+gesplitst. Echte aaneengeschreven familienamen zoals `Devos`, `Vanhee` en `Verbrugghe` worden wel
+gewoon gesplitst.
 
 Eigen instellingen maak je met een `with`-expressie:
 
@@ -244,6 +269,12 @@ Zet ze op `0` om het klassieke gedrag terug te krijgen.
   fonetisch dicht bij elkaar, en de score is dan nauwelijks informatief. Verhoog de drempel of
   vergelijk zulke velden exact.
 - **Cijfers en leestekens** worden weggegooid; huisnummers en initialen dragen niets bij.
+- **Woordvolgorde telt alleen niet mee in de score.** `IgnoreTokenOrder` maakt `Similarity`,
+  `DutchFuzzyEquals`, `FuzzyMatchDutch` en de index ongevoelig voor de volgorde, maar de fonetische
+  sleutel blijft volgordegevoelig: `PhoneticKey`, `SoundsLike` en
+  `DutchPhoneticEqualityComparer` zien `Jan Bakker` en `Bakker, Jan` als verschillend. Ook
+  gedeeltelijke namen (`Bakker` tegenover `Jan Bakker`) en initialen (`J. Bakker`) worden niet
+  speciaal behandeld.
 - **De zoekmodus van de index.** `DutchFuzzyIndex.Search` staat standaard op
   `DutchFuzzyIndexSearchMode.Exact`: elk item wordt gescoord (met hergebruikte, voorbewerkte
   sleutels), zodat het resultaat identiek is aan een lineaire scan. `Blocked` scoort eerst de
@@ -324,6 +355,28 @@ Drie dingen om te weten:
   blokken groot worden. Op echte, meer gespreide data is een query beduidend sneller. Meet dus op
   je eigen data, en gebruik `DutchFuzzyIndexSearchMode.BlockedOnly` als je een harde bovengrens
   nodig hebt.
+
+### Kosten van `IgnoreTokenOrder`
+
+Wanneer beide kanten twee of meer woorden hebben, berekent de scorer naast de score in de
+oorspronkelijke volgorde ook een score op de gesorteerde woorden. Die tweede berekening wordt
+overgeslagen als ze het resultaat niet kan veranderen (de eerste score is al ≥ 0.97, of beide kanten
+staan al in gesorteerde volgorde). Daarnaast worden de bigrammen voor de n-gramcomponent nu één keer
+per string voorbereid en hergebruiken Jaro-Winkler en Levenshtein hun werkbuffers, wat ook
+enkelwoordsvergelijkingen goedkoper maakt. Gemeten met `ScorerBenchmarks` en `IndexBenchmarks`
+(preset `Names`, `--job short --inProcess`, .NET 10, Windows x64), vóór en na de wijziging:
+
+| Meting | Vóór | Na | Factor |
+|---|---|---|---|
+| Score, één woord (`Schoenmakers` / `Schoonmakers`) | ~0,75–1,05 µs | ~0,68 µs | ≤ 1,0× |
+| Score, twee woorden in dezelfde volgorde | ~0,95–1,24 µs | ~1,21 µs | ~1,0–1,3× |
+| Score, omgedraaide volgorde | ~1,67–2,08 µs | ~1,68 µs | ~1,0× |
+| `Search` (`Exact`), 100.000 namen van twee woorden | ~148 ms | ~189 ms | ~1,3× |
+| `Search` (`Blocked`), 100.000 namen | ~3,2 ms | ~3,1 ms | ~1,0× |
+| `FuzzyMatchDutch` (lineaire scan), 100.000 namen | ~213 ms | ~267 ms | ~1,25× |
+
+De ranges in de kolom "Vóór" komen van twee aparte basismetingen. Heb je de volgorde-tolerantie niet
+nodig, zet dan `IgnoreTokenOrder = false`; dan valt de tweede score volledig weg.
 
 ### Invoerlengte en onbetrouwbare invoer
 

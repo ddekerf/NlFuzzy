@@ -67,6 +67,50 @@ public class PropertyTests
     }
 
     [Fact]
+    public void TokenOrderTolerance_KeepsTheContractAndNeverLowersAScore()
+    {
+        var random = new Random(7);
+
+        for (var i = 0; i < Iterations; i++)
+        {
+            var tolerant = Profiles[random.Next(Profiles.Length)] with { IgnoreTokenOrder = true };
+            var ordered = tolerant with { IgnoreTokenOrder = false };
+            var a = RandomTokens(random);
+            var b = random.Next(3) == 0 ? Shuffle(a, random) : RandomTokens(random);
+
+            var score = DutchFuzzy.Similarity(a, b, tolerant);
+
+            Assert.False(double.IsNaN(score) || double.IsInfinity(score), $"Not finite for '{a}' vs '{b}'.");
+            Assert.InRange(score, 0d, 1d);
+            Assert.Equal(score, DutchFuzzy.Similarity(b, a, tolerant), 10);
+            Assert.True(
+                score >= DutchFuzzy.Similarity(a, b, ordered) - 1e-12,
+                $"Token-order tolerance lowered the score for '{a}' vs '{b}'.");
+        }
+    }
+
+    [Fact]
+    public void Normalization_IsIdempotentForElidedArticles()
+    {
+        var random = new Random(11);
+        var apostrophes = new[] { "'", "’", "‘", "`", "´" };
+
+        for (var i = 0; i < Iterations; i++)
+        {
+            var options = Profiles[random.Next(Profiles.Length)];
+            var input = RandomText(random, 8)
+                        + (random.Next(2) == 0 ? " d" : " D")
+                        + apostrophes[random.Next(apostrophes.Length)]
+                        + RandomText(random, 10);
+
+            var once = DutchTextNormalizer.Instance.Normalize(input, options);
+            var twice = DutchTextNormalizer.Instance.Normalize(once, options);
+
+            Assert.Equal(once, twice);
+        }
+    }
+
+    [Fact]
     public void Normalization_IsIdempotent()
     {
         var random = new Random(3);
@@ -159,6 +203,33 @@ public class PropertyTests
 
         Assert.InRange(DutchFuzzy.Similarity(long1, long2), 0d, 1d);
         Assert.InRange(DutchFuzzy.Similarity(long1, RandomText(random, 2_000)), 0d, 1d);
+    }
+
+    /// <summary>Two to four random words, so token-order handling is actually exercised.</summary>
+    private static string RandomTokens(Random random)
+    {
+        var count = random.Next(2, 5);
+        var tokens = new string[count];
+
+        for (var i = 0; i < count; i++)
+        {
+            tokens[i] = RandomText(random, 10).Replace(" ", string.Empty, StringComparison.Ordinal);
+        }
+
+        return string.Join(random.Next(2) == 0 ? " " : ", ", tokens);
+    }
+
+    private static string Shuffle(string value, Random random)
+    {
+        var tokens = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        for (var i = tokens.Length - 1; i > 0; i--)
+        {
+            var j = random.Next(i + 1);
+            (tokens[i], tokens[j]) = (tokens[j], tokens[i]);
+        }
+
+        return string.Join(" ", tokens);
     }
 
     private static string RandomText(Random random, int maxLength = 24)

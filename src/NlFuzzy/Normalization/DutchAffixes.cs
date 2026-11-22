@@ -37,6 +37,28 @@ public static class DutchAffixes
     };
 
     /// <summary>
+    /// Normalized tokens that start with a glued-prefix spelling but are not glued surnames:
+    /// frequent first names, Dutch and Flemish municipalities, and surnames such as "Derksen"
+    /// ("der" + "ksen") that the stem rule cannot tell apart. Hand-compiled from public name and
+    /// place facts (see PROVENANCE.md). Only tokens that would otherwise be split belong here.
+    /// </summary>
+    private static readonly HashSet<string> NeverSplit = new(StringComparer.Ordinal)
+    {
+        // First names
+        "vanessa", "vanesa", "dennis", "denis", "denise", "deniz", "denzel", "deborah", "debora", "delia",
+        "delphine", "delano", "demian", "derek", "desiree", "destiny", "devin", "devon",
+        "verena", "veronique", "veronica", "vernon", "teresa", "terence", "tenzin", "tenzing",
+
+        // Municipalities and towns
+        "deventer", "delft", "delfzijl", "dedemsvaart", "denekamp", "dendermonde", "denderleeuw",
+        "dentergem", "destelbergen", "deinze", "tervuren", "ternat", "terneuzen", "terschelling",
+        "verviers",
+
+        // Surnames that are not glued particles
+        "derksen", "denissen", "deelen"
+    };
+
+    /// <summary>
     /// Glued Flemish prefixes and their expansion, ordered longest first.
     /// </summary>
     private static readonly KeyValuePair<string, string>[] GluedPrefixes =
@@ -159,6 +181,17 @@ public static class DutchAffixes
     /// <remarks>
     /// This is deliberately aggressive: it raises recall and lowers precision. It is only applied
     /// when <see cref="DutchFuzzyOptions.SplitGluedNamePrefixes"/> is enabled.
+    /// <para>
+    /// Prefixes are tried longest first. A prefix is only split off when at least
+    /// <see cref="MinimumStemLength"/> letters remain and the remaining stem can start a Dutch word:
+    /// a stem that starts with a doubled consonant or with "ck" is rejected, so "dekker" and
+    /// "decker" stay intact. When a prefix is rejected, shorter prefixes are still tried
+    /// ("vandellen" becomes "van dellen").
+    /// </para>
+    /// <para>
+    /// A token of five or more letters that starts with "dh" + vowel is read as the apostrophe-less
+    /// form of the elided article: "dhondt" becomes "de hondt", like "D'Hondt".
+    /// </para>
     /// </remarks>
     public static string SplitGluedPrefixes(string value)
     {
@@ -183,9 +216,20 @@ public static class DutchAffixes
         return builder.ToString();
     }
 
-    private static string SplitToken(string token)
+    /// <summary>The tokens that are never split, for tests that keep the list honest.</summary>
+    internal static IReadOnlyCollection<string> NeverSplitTokens => NeverSplit;
+
+    /// <summary>Splits a single token as if the never-split list were empty. For tests only.</summary>
+    internal static string SplitGluedPrefixesIgnoringExceptions(string token) => SplitToken(token, honourNeverSplit: false);
+
+    private static string SplitToken(string token, bool honourNeverSplit = true)
     {
         if (Particles.Contains(token) || GluedOnlyParticles.Contains(token))
+        {
+            return token;
+        }
+
+        if (honourNeverSplit && NeverSplit.Contains(token))
         {
             return token;
         }
@@ -204,11 +248,47 @@ public static class DutchAffixes
                 continue;
             }
 
+            if (!IsPlausibleStemStart(token, glued.Length))
+            {
+                continue;
+            }
+
             return prefix.Value + " " + token.Substring(glued.Length);
+        }
+
+        // "Dhondt", "Dhaene": the apostrophe-less spelling of the elided article in D'Hondt.
+        if (token.Length >= MinimumElidedDhLength
+            && token[0] == 'd'
+            && token[1] == 'h'
+            && IsVowel(token[2]))
+        {
+            return "de " + token.Substring(1);
         }
 
         return token;
     }
+
+    /// <summary>The minimum token length for splitting "dh" + vowel into "de h…".</summary>
+    private const int MinimumElidedDhLength = 5;
+
+    /// <summary>
+    /// False when the stem that would remain after a glued prefix starts in a way no Dutch word
+    /// does: with a doubled consonant ("de|kker") or with "ck" ("de|cker").
+    /// </summary>
+    private static bool IsPlausibleStemStart(string token, int stemStart)
+    {
+        var first = token[stemStart];
+        var second = token[stemStart + 1];
+
+        if (first == 'c' && second == 'k')
+        {
+            return false;
+        }
+
+        return first != second || IsVowel(first);
+    }
+
+    private static bool IsVowel(char c) => c is 'a' or 'e' or 'i' or 'o' or 'u' or 'y';
 
     private static bool IsRecognisedParticle(string token, bool includeGluedOnlyParticles) =>
         Particles.Contains(token) || (includeGluedOnlyParticles && GluedOnlyParticles.Contains(token));
