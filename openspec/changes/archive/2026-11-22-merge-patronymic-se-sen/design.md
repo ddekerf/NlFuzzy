@@ -28,7 +28,7 @@ In the evaluation set, no `nomatch` pair is a `-se`/`-sen` swap. The `-s`/`-sen`
 ## Decisions
 
 ### 1. Rewrite the token's spelling, not the key
-In `EncodeToken`, before the rule loop: when `MergeSeSenEndings` is on, the token has at least six
+In `EncodeToken`, before the rule loop: when `MergeSeSenEndings` is on, the token has at least five
 letters and ends in `sen` or `zen`, encode `token[..^1]` instead. Working on spelling keeps the rule
 independent of profile and vowel mode, and it covers `-zen` explicitly (`Hanzen`).
 

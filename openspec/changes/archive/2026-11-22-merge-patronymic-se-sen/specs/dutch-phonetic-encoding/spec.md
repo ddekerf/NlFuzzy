@@ -3,7 +3,7 @@
 ## ADDED Requirements
 
 ### Requirement: Patronymic -sen is encoded like -se when enabled
-When `MergeSeSenEndings` is true, the encoder SHALL encode a token of at least six letters that ends in
+When `MergeSeSenEndings` is true, the encoder SHALL encode a token of at least five letters that ends in
 `sen` or `zen` as if its final `n` were absent, so the `-sen` and `-se` forms of a patronymic share a
 key. Shorter tokens, and tokens with other endings, SHALL be encoded unchanged.
 
