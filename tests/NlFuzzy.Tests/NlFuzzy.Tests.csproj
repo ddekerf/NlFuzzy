@@ -11,6 +11,9 @@
   <ItemGroup>
     <Content Include="Golden\positive-pairs.csv" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Golden\negative-pairs.csv" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Golden\evaluation-pairs.csv" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Golden\evaluation-baseline.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('Golden\evaluation-baseline.json')" />
+    <Content Include="Golden\sources\*.csv" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Api\PublicApi.approved.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

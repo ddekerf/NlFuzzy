@@ -68,8 +68,10 @@ The score SHALL always be a finite number in [0, 1], symmetric in its arguments,
 - **THEN** every score is finite, in [0, 1], symmetric, and 1.0 for identical input
 
 ### Requirement: The Names preset passes the golden dataset
-With the `Names` preset, every positive pair in the golden dataset SHALL either share a phonetic key or
-score at least 0.85, and every negative pair SHALL have different keys and score below 0.75.
+With the `Names` preset, every positive pair in the must-pass core golden dataset SHALL either share a
+phonetic key or score at least 0.85, and every negative pair SHALL have different keys and score below
+0.75. The larger evaluation dataset is measured against regression floors instead, as specified in
+`matching-quality-evaluation`.
 
 #### Scenario: Positive pairs
 - **WHEN** `Vandenbroecke`/`Van den Broecke`, `Claes`/`Klaas` and `vrede`/`wrede` are compared with the `Names` preset

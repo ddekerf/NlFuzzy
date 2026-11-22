@@ -30,6 +30,23 @@ Er is geen aparte CLA. Het inbound=outbound-model hierboven is voldoende.
 - Wijzig je scoring, normalisatie of fonetiek, voeg dan cases toe aan de gouden dataset in
   `tests/NlFuzzy.Tests/Golden`.
 
+## Evaluatieset en baseline
+
+`tests/NlFuzzy.Tests/Golden/evaluation-pairs.csv` is de grote, gelabelde evaluatieset. Zo werk je
+ermee:
+
+- **Paren toevoegen.** Elke rij heeft `left,right,label,category,source,split,note`. Gebruik een
+  bestaande categorie uit `Evaluation/EvaluationDataset.cs`, `hand` als bron (of
+  `wikidata:Qa/Qb` voor een rij uit de momentopname), en laat de split berekenen:
+  `EvaluationDataset.ComputeSplit(left, right)`. `EvaluationDatasetTests` controleert dat.
+- **Labels volgen nooit de scorer.** Label op taalkundig oordeel en voeg paren toe vóór je meet. Een
+  paar dat de scorer mist, blijft staan als misser. Twijfel je, laat het paar dan weg.
+- **Niet afstemmen op de holdout.** Gebruik de `tune`-split om gewichten of regels te verbeteren, en
+  de `holdout`-split alleen om het resultaat te controleren.
+- **De baseline verandert alleen bewust.** Wordt een categorie beter, verhoog dan de baseline met
+  `NLFUZZY_WRITE_BASELINE="<reden>"` en de `EvaluationTests`, in een eigen commit met die reden. Een
+  daling boven de tolerantie (één paar per categorie, 0,5 procentpunt totaal) laat de build falen.
+
 ## Controle vóór het indienen
 
 ```bash
