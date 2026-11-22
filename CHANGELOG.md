@@ -70,11 +70,13 @@ eerste publicatie op nuget.org.
   een losse `d` overbleef die geen tussenvoegsel is: `D'Hondt` tegenover `De Hondt` scoorde 0.28 en
   `Dhondt` tegenover `De Hondt` 0.35 (preset `Names`). Een `d` vooraan een woord, direct gevolgd door
   een apostrof (`'`, `’`, `‘`, `` ` `` of `´`) en minstens drie letters, wordt nu gelezen als het
-  tussenvoegsel `de`, in elke preset. Een initiaal (`D. Jansen`) en `d'r` blijven ongemoeid. Met
+  tussenvoegsel `de`, wanneer `StripNamePrefixes = true` (de presets `Default` en `Names`). In de
+  preset `Words` blijft de apostrof een scheidingsteken, zodat `d'accord` niet `de accord` wordt.
+  Een initiaal (`D. Jansen`) en `d'r` blijven ongemoeid. Met
   `SplitGluedNamePrefixes = true` wordt bovendien een woord van minstens vijf letters dat met `dh` +
   klinker begint gesplitst als `de h…`, zodat `Dhondt`, `D'Hondt` en `De Hondt` dezelfde sleutel
   krijgen. **BREAKING (fonetische sleutels):** sleutels veranderen voor elke invoer met `d'` voor een
-  naam, in alle presets (`Default`, `Names`, `Words`), en voor `dh`-namen in de presets die
+  naam in de presets `Default` en `Names`, en voor `dh`-namen in de presets die
   aaneengeschreven tussenvoegsels splitsen (`Names`).
 - **Aaneengeschreven tussenvoegsels werden van gewone namen afgesplitst.** Met
   `SplitGluedNamePrefixes = true` (de preset `Names`) werd `Dekker` tot `kker de`, `Vanessa` tot
