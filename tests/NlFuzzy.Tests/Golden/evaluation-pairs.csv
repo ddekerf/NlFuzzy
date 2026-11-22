@@ -1025,3 +1025,31 @@ Franzen,Frensen,nomatch,nm-vowel,wikidata:Q33093162/Q83350066,tune,
 Jaspers,Jespers,nomatch,nm-vowel,wikidata:Q36894420/Q83359890,holdout,
 Merck,Marck,nomatch,nm-vowel,wikidata:Q36896059/Q56245758,tune,
 Merck,Mark,nomatch,nm-vowel,wikidata:Q36896059/Q6766392,holdout,
+Born,Bron,nomatch,nm-transposition,hand,tune,Two separate surnames (Born; Bron 'spring')
+Ruts,Rust,nomatch,nm-transposition,hand,tune,Two separate surnames (Flemish Ruts; Dutch Rust)
+Kras,Kars,nomatch,nm-transposition,hand,tune,Two separate surnames (Kras; Kars from Karel)
+Daan,Dana,nomatch,nm-transposition,hand,tune,Two separate first names (male Daan; female Dana)
+Rian,Rina,nomatch,nm-transposition,hand,holdout,Two separate first names
+Arno,Aron,nomatch,nm-transposition,hand,tune,Two separate first names (Arno from Arnold; Biblical Aron)
+Lina,Lian,nomatch,nm-transposition,hand,tune,Two separate first names
+Dina,Dian,nomatch,nm-transposition,hand,holdout,Two separate first names
+Aerts,Arets,nomatch,nm-transposition,hand,tune,Two separate surnames (Aerts from Arnold; Limburg surname Arets)
+Drost,Dorst,nomatch,nm-transposition,hand,tune,Two separate surnames (Drost 'bailiff'; Dorst from the place name)
+Reimer,Riemer,nomatch,nm-transposition,hand,holdout,Two separate surnames (Reimer from Reinmar; Riemer 'strap maker')
+Marian,Marina,nomatch,nm-transposition,hand,holdout,Two separate first names
+Dorian,Dorina,nomatch,nm-transposition,hand,holdout,Two separate first names (male Dorian; female Dorina)
+Christian,Christina,nomatch,nm-transposition,hand,tune,Two separate first names (male and female form)
+Adriaan,Adriana,nomatch,nm-transposition,hand,holdout,Two separate first names (male and female form)
+Juliaan,Juliana,nomatch,nm-transposition,hand,tune,Two separate first names (male and female form)
+Bakker,Bakler,match,typo,hand,holdout,Substitution in the middle (k → l)
+Mulder,Mulfer,match,typo,hand,holdout,Substitution in the middle (d → f)
+Visser,Bisser,match,typo,hand,tune,Substitution at the start (v → b)
+Jansen,Jansem,match,typo,hand,tune,Substitution at the end (n → m)
+Hendriks,Hendroks,match,typo,hand,tune,Substitution in the middle (i → o)
+Dijkstra,Dijksta,match,typo,hand,tune,Missing letter near the end (r)
+Schoenmakers,Schoenmakrs,match,typo,hand,tune,Missing letter in the middle (e)
+Hoekstra,Oekstra,match,typo,hand,holdout,Missing letter at the start (h)
+Timmermans,Timmerans,match,typo,hand,tune,Missing letter in the middle (m)
+Kuipers,Kuiopers,match,typo,hand,holdout,Extra letter in the middle (o)
+Visser,Vissert,match,typo,hand,tune,Extra letter at the end (t)
+Mulder,Muldner,match,typo,hand,tune,Extra letter in the middle (n)

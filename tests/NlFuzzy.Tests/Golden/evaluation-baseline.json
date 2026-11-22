@@ -1,7 +1,7 @@
 {
   "preset": "Names",
   "threshold": 0.82,
-  "reason": "MergeSeSenEndings in Names: patronymic-se-sen 0 -\u003E 25 of 25; holdout F1 0.904 -\u003E 0.914.",
+  "reason": "Extend the evaluation set with 16 nm-transposition and 12 non-swap typo pairs; scorer unchanged. Holdout F1 0.914 -\u003E 0.910.",
   "passes": {
     "holdout": {
       "c-k": 6,
@@ -20,6 +20,7 @@
       "nm-first-sound": 7,
       "nm-same-prefix": 13,
       "nm-short": 20,
+      "nm-transposition": 6,
       "nm-unrelated": 14,
       "nm-vowel": 12,
       "particle-glued": 7,
@@ -28,7 +29,7 @@
       "ph-th-gh": 10,
       "surname-variant": 7,
       "token-order": 12,
-      "typo": 4,
+      "typo": 6,
       "ui-uy-uij": 11
     },
     "tune": {
@@ -48,6 +49,7 @@
       "nm-first-sound": 45,
       "nm-same-prefix": 36,
       "nm-short": 23,
+      "nm-transposition": 10,
       "nm-unrelated": 38,
       "nm-vowel": 23,
       "particle-glued": 26,
@@ -56,20 +58,20 @@
       "ph-th-gh": 19,
       "surname-variant": 18,
       "token-order": 23,
-      "typo": 12,
+      "typo": 17,
       "ui-uy-uij": 23
     }
   },
   "overall": {
     "holdout": {
-      "precision": 0.9371,
-      "recall": 0.8922,
-      "f1": 0.9141
+      "precision": 0.9379,
+      "recall": 0.883,
+      "f1": 0.9096
     },
     "tune": {
-      "precision": 0.9658,
-      "recall": 0.9278,
-      "f1": 0.9464
+      "precision": 0.9662,
+      "recall": 0.9226,
+      "f1": 0.9439
     }
   }
 }
