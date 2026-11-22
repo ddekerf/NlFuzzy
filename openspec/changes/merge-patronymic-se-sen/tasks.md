@@ -10,7 +10,7 @@
 
 - [x] 2.1 Run `EvaluationTests` with the detailed logger; verify the floor test still passes, `patronymic-se-sen` rises on both splits, and any other loss stays within the floor tolerance and is explained here (record the before/after counts in this task)
   - Floor test passes. Changed categories against the baseline: `patronymic-se-sen` tune 0 → 22 (of 22) and holdout 0 → 3 (of 3); `nm-vowel` tune 22 → 23 (`Janssen`/`Jenssen` now correctly rejected, 0.828 → 0.813); `surname-variant` tune 19 → 18 (`Stienissen`/`Stinnissen`, 0.827 → 0.811, see design.md risks). Overall holdout: precision 0.936 → 0.937, recall 0.874 → 0.892, F1 0.904 → 0.914; tune F1 0.920 → 0.946. With the original six-letter minimum, `Gijsen`/`Gysen` (ij-ei-y) also broke (0.900 → 0.594); lowering it to five fixed that (design.md §3).
-- [ ] 2.2 Rewrite `evaluation-baseline.json` with `NLFUZZY_WRITE_BASELINE="<reason>"` and commit only that file, with the reason and the new holdout numbers in the message; verify the floor test passes against the new baseline
+- [x] 2.2 Rewrite `evaluation-baseline.json` with `NLFUZZY_WRITE_BASELINE="<reason>"` and commit only that file, with the reason and the new holdout numbers in the message; verify the floor test passes against the new baseline
 
 ## 3. Docs
 
@@ -20,4 +20,4 @@
 
 ## 4. Integration check
 
-- [ ] 4.1 Run the full `dotnet test -c Release` suite and build all three TFMs without warnings; confirm the core golden tests and every evaluation floor pass
+- [x] 4.1 Run the full `dotnet test -c Release` suite and build all three TFMs without warnings; confirm the core golden tests and every evaluation floor pass
