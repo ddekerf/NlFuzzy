@@ -21,8 +21,8 @@
 
 ## 4. Metrics, baseline and floors
 
-- [ ] 4.1 Add `EvaluationMetrics` (per-category pass counts and rates; overall precision, recall and F1 per split) with unit tests on a five-pair synthetic set with known results
-- [ ] 4.2 Add the evaluation test that writes the per-category Markdown report through `ITestOutputHelper`; verify the report shows every category for both splits
+- [x] 4.1 Add `EvaluationMetrics` (per-category pass counts and rates; overall precision, recall and F1 per split) with unit tests on a five-pair synthetic set with known results
+- [x] 4.2 Add the evaluation test that writes the per-category Markdown report through `ITestOutputHelper`; verify the report shows every category for both splits
 - [ ] 4.3 Run the evaluation once on the committed dataset and record `evaluation-baseline.json` in a commit of its own; verify the floor test passes on the unchanged scorer
 - [ ] 4.4 Verify the floor test fails as specified: temporarily set `FinalPhonemeMismatchPenalty` to 0.6 in a scratch run, check that the failing category and its baseline are named, then discard the scratch change
 
