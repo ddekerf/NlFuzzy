@@ -41,6 +41,11 @@ eerste publicatie op nuget.org.
   vijf of meer letters op `-sen`/`-zen`; `Default` en `Words` produceren dezelfde sleutels als
   voorheen.
 
+- **Scores van `Names` voor paren met één verwisseling.** Door `TranspositionFloor` matchen op de
+  evaluatieset 45 van de 52 typfouten (was 23), maar 8 van de 16 verschillende namen die één
+  verwisseling uit elkaar liggen scoren nu ook als dezelfde naam, vooral mannelijke en vrouwelijke
+  voornamen (`Marian`/`Marina`, `Christian`/`Christina`). Holdout-F1 0.910 → 0.921.
+
 - **`DutchFuzzyIndex<T>.Search` is standaard exact.** De index gaf geen enkel resultaat buiten de
   fonetische blokken zodra er één (mogelijk irrelevante) blokkandidaat bestond, ook niet wanneer een
   ander item ruim boven de drempel scoorde. De nieuwe standaardmodus
@@ -113,6 +118,15 @@ eerste publicatie op nuget.org.
 
 ### Toegevoegd
 
+- **`DutchFuzzyOptions.TranspositionFloor`: typfouten met twee verwisselde letters.** Zijn twee
+  genormaliseerde waarden gelijk op één verwisseling van naast elkaar staande letters na, binnen een
+  woord van minstens vijf letters, dan scoort het paar minstens deze vloer. Standaard 0 (uit); de
+  preset `Names` gebruikt 0.85, zodat `Kuipers`/`Kuipres` (0.740) en `Hoekstra`/`Hoekstar` (0.627)
+  nu 0.850 scoren. Woorden van vier letters blijven buiten schot (`Born`/`Bron`). Fonetische
+  sleutels veranderen niet.
+- Evaluatieset: nieuwe no-matchcategorie `nm-transposition` (16 verschillende namen die één
+  verwisseling uit elkaar liggen, zoals `Born`/`Bron` en `Aerts`/`Arets`) en 12 typfouten die geen
+  verwisseling zijn (vervangen, ontbrekende en extra letters), met integriteitstests.
 - `DutchFuzzyIndexSearchMode` (`Exact`, `Blocked`, `BlockedOnly`) met expliciete recall-garanties.
 - Pariteitstests die de index op adversariale datasets vergelijken met de lineaire scan, plus
   seeded property/fuzztests (score altijd eindig in `[0, 1]`, symmetrisch en reflexief,

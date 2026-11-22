@@ -207,11 +207,11 @@ Scores voor dezelfde paren:
 
 ### De drie presets
 
-| Preset | Profiel | `EncodeVowels` | `StripNamePrefixes` | `SplitGluedNamePrefixes` | `IgnoreTokenOrder` | `MergeSeSenEndings` | Waarvoor |
-|---|---|---|---|---|---|---|---|
-| `DutchFuzzyOptions.Default` | Tolerant | nee | ja | nee | ja | nee | algemeen, hoge recall |
-| `DutchFuzzyOptions.Names` | Tolerant | ja | ja | ja | ja | ja | persoonsnamen, ook Vlaamse aaneengeschreven tussenvoegsels |
-| `DutchFuzzyOptions.Words` | Strict | ja | nee | nee | nee | nee | gewone woorden in plaats van namen |
+| Preset | Profiel | `EncodeVowels` | `StripNamePrefixes` | `SplitGluedNamePrefixes` | `IgnoreTokenOrder` | `MergeSeSenEndings` | `TranspositionFloor` | Waarvoor |
+|---|---|---|---|---|---|---|---|---|
+| `DutchFuzzyOptions.Default` | Tolerant | nee | ja | nee | ja | nee | 0 | algemeen, hoge recall |
+| `DutchFuzzyOptions.Names` | Tolerant | ja | ja | ja | ja | ja | 0.85 | persoonsnamen, ook Vlaamse aaneengeschreven tussenvoegsels |
+| `DutchFuzzyOptions.Words` | Strict | ja | nee | nee | nee | nee | 0 | gewone woorden in plaats van namen |
 
 `Names` is de preset waartegen de gouden dataset gevalideerd is. Het verschil is groot bij
 aaneengeschreven tussenvoegsels:
@@ -256,6 +256,27 @@ afstandsmaten dat verschil nauwelijks opmerken:
 
 Zet ze op `0` om het klassieke gedrag terug te krijgen.
 
+### Typfouten: twee letters verwisseld
+
+De meest voorkomende typfout is twee naast elkaar staande letters in de verkeerde volgorde. Zo'n
+verwisseling verandert de fonetische sleutel op twee plaatsen en aan het eind van een naam ook de
+laatste klank, waardoor de ankerstraf toeslaat. Met `TranspositionFloor` krijgt een paar dat op
+precies één verwisseling na gelijk is minstens die score. `Names` gebruikt 0.85, de andere presets 0
+(uit):
+
+| Paar | `TranspositionFloor = 0` | `Names` (0.85) |
+|---|---|---|
+| `Kuipers` / `Kuipres` | 0.740 | 0.850 |
+| `Hoekstra` / `Hoekstar` | 0.627 | 0.850 |
+| `Born` / `Bron` | 0.549 | 0.549 |
+
+De vloer geldt alleen binnen één woord van minstens vijf letters. In kortere woorden levert een
+verwisseling vaak een andere naam op (`Born`/`Bron`, `Ruts`/`Rust`). Ook bij langere woorden kan dat
+gebeuren, vooral bij mannelijke en vrouwelijke voornamen (`Marian`/`Marina`,
+`Christian`/`Christina`): die scoren met `Names` nu als dezelfde naam. 0.85 ligt onder
+`IdenticalKeyFloor` (0.90), zodat een gelijk klinkende spelling (`Meier`) nog altijd boven een
+typfout (`Mejier`) eindigt. Fonetische sleutels veranderen niet.
+
 ## 6. Wanneer dit niet werkt
 
 - **Fonetische codering is per definitie lossy.** Je koopt recall met precisie. Gebruik de sleutel
@@ -288,20 +309,23 @@ Zet ze op `0` om het klassieke gedrag terug te krijgen.
 
 ### Kwaliteit
 
-De kwaliteit wordt gemeten op een gelabelde evaluatieset van 1.026 naamparen (624 dezelfde naam,
-402 een andere naam) in 26 categorieën, deels met de hand samengesteld en deels afkomstig uit
+De kwaliteit wordt gemeten op een gelabelde evaluatieset van 1.054 naamparen (636 dezelfde naam,
+418 een andere naam) in 27 categorieën, deels met de hand samengesteld en deels afkomstig uit
 Wikidata (CC0). 30% van de paren zit in een vaste *holdout*-split waar nooit op afgestemd wordt.
 Met de preset `Names` en drempel 0.82:
 
 | Split | Precisie | Recall | F1 |
 |---|---:|---:|---:|
-| holdout (277 paren) | 0.937 | 0.892 | 0.914 |
-| tune (749 paren) | 0.966 | 0.928 | 0.946 |
+| holdout (287 paren) | 0.919 | 0.924 | 0.921 |
+| tune (767 paren) | 0.959 | 0.955 | 0.957 |
 
 Patroniemen die alleen in `-se`/`-sen` verschillen (`Willemsen`/`Willemse`) matchen sinds
-`MergeSeSenEndings` allemaal (25 van 25, was 0). De zwakste categorieën zijn nu typfouten van één
-teken (16 van 40) en paren met een andere klinker die toch als dezelfde naam scoren
-(`Peters`/`Pieters`: 35 van 45 correct afgewezen).
+`MergeSeSenEndings` allemaal (25 van 25, was 0). Typfouten van één teken matchen sinds
+`TranspositionFloor` in 45 van 52 gevallen (was 23); wat overblijft zijn vooral vervangen, ontbrekende
+of extra letters (`Koster`/`Kosrer`, `Visser`/`Vissert`). Daar staat tegenover dat 8 van de 16
+verschillende namen die één verwisseling uit elkaar liggen nu als dezelfde naam scoren
+(`Aerts`/`Arets`). De zwakste afwijzing blijft een andere klinker (`Peters`/`Pieters`: 35 van 45
+correct afgewezen).
 
 De volledige tabel per categorie staat in de uitvoer van `EvaluationTests`:
 
