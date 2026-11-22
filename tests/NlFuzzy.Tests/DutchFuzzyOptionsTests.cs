@@ -22,6 +22,7 @@ public class DutchFuzzyOptionsTests
         Assert.Equal(0.20, options.NGramWeight, 10);
         Assert.Equal(1d, options.PhoneticWeight + options.OrthographicWeight + options.NGramWeight, 10);
         Assert.Equal(0.90, options.IdenticalKeyFloor, 10);
+        Assert.Equal(0d, options.TranspositionFloor, 10);
         Assert.Equal(0.82, options.DefaultThreshold, 10);
         Assert.Equal(0.20, options.InitialPhonemeMismatchPenalty, 10);
         Assert.Equal(0.20, options.FinalPhonemeMismatchPenalty, 10);
@@ -38,6 +39,7 @@ public class DutchFuzzyOptionsTests
         Assert.True(options.SplitGluedNamePrefixes);
         Assert.True(options.IgnoreTokenOrder);
         Assert.True(options.MergeSeSenEndings);
+        Assert.Equal(0.85, options.TranspositionFloor, 10);
     }
 
     [Fact]
@@ -51,6 +53,7 @@ public class DutchFuzzyOptionsTests
         Assert.False(options.SplitGluedNamePrefixes);
         Assert.False(options.IgnoreTokenOrder);
         Assert.False(options.MergeSeSenEndings);
+        Assert.Equal(0d, options.TranspositionFloor, 10);
     }
 
     [Fact]
@@ -125,6 +128,7 @@ public class DutchFuzzyOptionsTests
         {
             Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { DefaultThreshold = value }).Validate);
             Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { IdenticalKeyFloor = value }).Validate);
+            Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { TranspositionFloor = value }).Validate);
             Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { InitialPhonemeMismatchPenalty = value }).Validate);
             Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { FinalPhonemeMismatchPenalty = value }).Validate);
         }
@@ -150,6 +154,15 @@ public class DutchFuzzyOptionsTests
     public void Validate_RejectsNegativeMaxKeyLength()
     {
         Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Default with { MaxKeyLength = -1 }).Validate);
+    }
+
+    [Theory]
+    [InlineData(-0.1)]
+    [InlineData(1.5)]
+    [InlineData(double.NaN)]
+    public void Validate_RejectsAnOutOfRangeTranspositionFloor(double value)
+    {
+        Assert.Throws<InvalidOperationException>((DutchFuzzyOptions.Names with { TranspositionFloor = value }).Validate);
     }
 
     [Theory]

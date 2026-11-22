@@ -64,6 +64,7 @@ public static class EvaluationDataset
         "nm-vowel",
         "nm-derived",
         "nm-unrelated",
+        "nm-transposition",
     ];
 
     public const int MinimumPerCategory = 15;
@@ -161,6 +162,36 @@ public static class EvaluationDataset
         }
 
         return hash;
+    }
+
+    /// <summary>The fewest letters a <c>nm-transposition</c> pair needs to count as a long pair.</summary>
+    public const int LongTranspositionLength = 5;
+
+    /// <summary>
+    /// True when the two values, lower-cased and trimmed, have the same length and differ only in one
+    /// pair of adjacent characters that appear in swapped order.
+    /// </summary>
+    public static bool IsSingleAdjacentSwap(string left, string right)
+    {
+        var a = left.Trim().ToLowerInvariant();
+        var b = right.Trim().ToLowerInvariant();
+
+        if (a.Length != b.Length)
+        {
+            return false;
+        }
+
+        var i = 0;
+
+        while (i < a.Length && a[i] == b[i])
+        {
+            i++;
+        }
+
+        return i < a.Length - 1
+               && a[i] == b[i + 1]
+               && a[i + 1] == b[i]
+               && string.Equals(a[(i + 2)..], b[(i + 2)..], StringComparison.Ordinal);
     }
 
     /// <summary>The order-independent identity of a pair, for duplicate checks.</summary>

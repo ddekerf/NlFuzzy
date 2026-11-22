@@ -75,6 +75,69 @@ public class DutchFuzzyScorerTests
         Assert.True(withoutFloor.Score("gijsbrecht", "gijsbregt") <= withFloor.Score("gijsbrecht", "gijsbregt"));
     }
 
+    [Theory]
+    [InlineData("Kuipers", "Kuipres")]
+    [InlineData("Hoekstra", "Hoekstar")]
+    [InlineData("Jan Kuipers", "Jan Kuipres")]
+    [InlineData("Kuipres", "Kuipers")]
+    public void TranspositionFloor_RaisesASingleAdjacentSwap(string a, string b)
+    {
+        Assert.True(Names.Score(a, b) >= 0.85, $"{a}/{b} scored {Names.Score(a, b)}.");
+    }
+
+    [Theory]
+    [InlineData("Born", "Bron")]
+    [InlineData("Jan Smit", "Jan Smti")]
+    [InlineData("Kuipers", "Kuirpes")]
+    [InlineData("Kuipers", "Kuipars")]
+    [InlineData("Jan Smit", "Ja nSmit")]
+    public void TranspositionFloor_LeavesOtherPairsAlone(string a, string b)
+    {
+        var withoutFloor = new DutchFuzzyScorer(DutchFuzzyOptions.Names with { TranspositionFloor = 0d });
+
+        Assert.Equal(withoutFloor.Score(a, b), Names.Score(a, b), 10);
+    }
+
+    [Theory]
+    [InlineData("kuipers", "kuipres", true)]
+    [InlineData("hoekstra", "hoekstar", true)]
+    [InlineData("akker", "kakker", false)]
+    [InlineData("kuipers", "kuipers", false)]
+    [InlineData("kuipers", "kuipera", false)]
+    [InlineData("kuipers", "kuirpes", false)]
+    [InlineData("kuipers", "kuiprse", false)]
+    [InlineData("jan smit", "jan smti", false)]
+    [InlineData("jan smit", "ja nsmit", false)]
+    [InlineData("smit jan", "smit ajn", false)]
+    [InlineData("kuipers jan", "kuipres jan", true)]
+    [InlineData("jan kuipers", "jan kuipres", true)]
+    [InlineData("born", "bron", false)]
+    [InlineData("aerts", "arets", true)]
+    public void IsSingleAdjacentSwap_ChecksOneSwapInAFiveLetterWord(string a, string b, bool expected)
+    {
+        Assert.Equal(expected, DutchFuzzyScorer.IsSingleAdjacentSwap(a, b));
+        Assert.Equal(expected, DutchFuzzyScorer.IsSingleAdjacentSwap(b, a));
+    }
+
+    [Fact]
+    public void TranspositionFloor_IsOffInTheDefaultPreset()
+    {
+        // The score Default gave before TranspositionFloor existed (the keys are equal there).
+        Assert.Equal(0.900, DutchFuzzyScorer.Default.Score("Kuipers", "Kuipres"), 3);
+        Assert.Equal(0d, DutchFuzzyScorer.Default.Options.TranspositionFloor, 10);
+    }
+
+    [Fact]
+    public void TranspositionFloor_KeepsSameSoundingSpellingsAhead()
+    {
+        var ranked = new[] { "Mejier", "Meier" }
+            .FuzzyMatchDutch("Meijer", x => x, threshold: 0d, take: 2, options: DutchFuzzyOptions.Names)
+            .ToList();
+
+        Assert.Equal(["Meier", "Mejier"], ranked.Select(m => m.Value));
+        Assert.True(ranked[1].Score >= 0.85);
+    }
+
     [Fact]
     public void Weights_ChangeTheOutcome()
     {

@@ -15,6 +15,12 @@ public sealed class DutchFuzzyScorer
     /// </summary>
     internal const double ReorderedScoreFactor = 0.97;
 
+    /// <summary>
+    /// The shortest word in which <see cref="DutchFuzzyOptions.TranspositionFloor"/> applies. A swap in
+    /// a shorter word often spells another name ("Born"/"Bron").
+    /// </summary>
+    internal const int MinimumTranspositionTokenLength = 5;
+
     private static readonly char[] TokenSeparator = { ' ' };
 
     private readonly DutchFuzzyOptions _options;
@@ -225,7 +231,58 @@ public sealed class DutchFuzzyScorer
             score = ApplyAnchorPenalties(score, keyA, keyB);
         }
 
+        if (_options.TranspositionFloor > 0d && IsSingleAdjacentSwap(normalizedA, normalizedB))
+        {
+            score = Math.Max(score, _options.TranspositionFloor);
+        }
+
         return MathCompat.Clamp(score, 0d, 1d);
+    }
+
+    /// <summary>
+    /// True when both texts are identical except for one pair of adjacent letters in swapped order
+    /// ("kuipers"/"kuipres"), where neither letter is a space and the word holding them has at least
+    /// <see cref="MinimumTranspositionTokenLength"/> characters.
+    /// </summary>
+    internal static bool IsSingleAdjacentSwap(string a, string b)
+    {
+        if (a.Length != b.Length)
+        {
+            return false;
+        }
+
+        var i = 0;
+
+        while (i < a.Length && a[i] == b[i])
+        {
+            i++;
+        }
+
+        if (i >= a.Length - 1)
+        {
+            return false;
+        }
+
+        var first = a[i];
+        var second = a[i + 1];
+
+        if (first == ' ' || second == ' ' || b[i] != second || b[i + 1] != first)
+        {
+            return false;
+        }
+
+        for (var j = i + 2; j < a.Length; j++)
+        {
+            if (a[j] != b[j])
+            {
+                return false;
+            }
+        }
+
+        var start = a.LastIndexOf(' ', i) + 1;
+        var end = a.IndexOf(' ', i + 2);
+
+        return (end < 0 ? a.Length : end) - start >= MinimumTranspositionTokenLength;
     }
 
     private static string JoinNonEmpty(string[] keys)

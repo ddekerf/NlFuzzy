@@ -200,6 +200,7 @@ public class ReadmeExamplesTests
         Assert.False(DutchFuzzyOptions.Default.SplitGluedNamePrefixes);
         Assert.True(DutchFuzzyOptions.Default.IgnoreTokenOrder);
         Assert.False(DutchFuzzyOptions.Default.MergeSeSenEndings);
+        Assert.Equal(0d, DutchFuzzyOptions.Default.TranspositionFloor, 10);
 
         Assert.Equal(DutchPhoneticProfile.Tolerant, DutchFuzzyOptions.Names.Profile);
         Assert.True(DutchFuzzyOptions.Names.EncodeVowels);
@@ -207,6 +208,7 @@ public class ReadmeExamplesTests
         Assert.True(DutchFuzzyOptions.Names.SplitGluedNamePrefixes);
         Assert.True(DutchFuzzyOptions.Names.IgnoreTokenOrder);
         Assert.True(DutchFuzzyOptions.Names.MergeSeSenEndings);
+        Assert.Equal(0.85, DutchFuzzyOptions.Names.TranspositionFloor, 10);
 
         Assert.Equal(DutchPhoneticProfile.Strict, DutchFuzzyOptions.Words.Profile);
         Assert.True(DutchFuzzyOptions.Words.EncodeVowels);
@@ -214,6 +216,7 @@ public class ReadmeExamplesTests
         Assert.False(DutchFuzzyOptions.Words.SplitGluedNamePrefixes);
         Assert.False(DutchFuzzyOptions.Words.IgnoreTokenOrder);
         Assert.False(DutchFuzzyOptions.Words.MergeSeSenEndings);
+        Assert.Equal(0d, DutchFuzzyOptions.Words.TranspositionFloor, 10);
     }
 
     [Fact]
@@ -245,6 +248,29 @@ public class ReadmeExamplesTests
 
         Assert.Equal(zonder, DutchFuzzy.Similarity(a, b, zonderStraf), 3);
         Assert.Equal(met, DutchFuzzy.Similarity(a, b, DutchFuzzyOptions.Names), 3);
+    }
+
+    [Theory]
+    [InlineData("Kuipers", "Kuipres", 0.740, 0.850)]
+    [InlineData("Hoekstra", "Hoekstar", 0.627, 0.850)]
+    [InlineData("Born", "Bron", 0.549, 0.549)]
+    public void Sectie5_TypfoutenVerwisseling(string a, string b, double zonder, double met)
+    {
+        var zonderVloer = DutchFuzzyOptions.Names with { TranspositionFloor = 0d };
+
+        Assert.Equal(zonder, DutchFuzzy.Similarity(a, b, zonderVloer), 3);
+        Assert.Equal(met, DutchFuzzy.Similarity(a, b, DutchFuzzyOptions.Names), 3);
+    }
+
+    [Fact]
+    public void Sectie5_GelijkKlinkendBovenTypfout()
+    {
+        var treffers = new[] { "Mejier", "Meier" }
+            .FuzzyMatchDutch("Meijer", x => x, threshold: 0d, take: 2, options: DutchFuzzyOptions.Names)
+            .ToList();
+
+        Assert.Equal("Meier", treffers[0].Value);
+        Assert.Equal("Mejier", treffers[1].Value);
     }
 
     [Fact]

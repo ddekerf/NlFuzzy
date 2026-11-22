@@ -120,6 +120,44 @@ public class EvaluationDatasetTests
         Assert.True(short_.Count == 0, $"Categories below {EvaluationDataset.MinimumPerCategory} pairs: " + string.Join(", ", short_));
     }
 
+    [Theory]
+    [InlineData("Born", "Bron", true)]
+    [InlineData("Aerts", "Arets", true)]
+    [InlineData("Hoekstra", "Hoekstar", true)]
+    [InlineData("Kuipers", "kuipres", true)]
+    [InlineData("Kuipers", "Kuirpes", false)]
+    [InlineData("Kuipers", "Kuipars", false)]
+    [InlineData("Brouwer", "Brouwr", false)]
+    [InlineData("Bakker", "Bakker", false)]
+    public void IsSingleAdjacentSwap_RecognizesExactlyOneSwap(string left, string right, bool expected)
+    {
+        Assert.Equal(expected, EvaluationDataset.IsSingleAdjacentSwap(left, right));
+    }
+
+    [Fact]
+    public void Dataset_TranspositionPairsAreSingleSwapsWithEnoughLongOnes()
+    {
+        var pairs = Pairs.Value.Where(p => p.Category == "nm-transposition").ToList();
+        var notSwaps = pairs
+            .Where(p => p.IsMatch || !EvaluationDataset.IsSingleAdjacentSwap(p.Left, p.Right))
+            .Select(p => $"line {p.LineNumber} {p.Left}/{p.Right}")
+            .ToList();
+
+        Assert.True(notSwaps.Count == 0, "nm-transposition rows that are not a single-swap nomatch: " + string.Join("; ", notSwaps));
+
+        var longPairs = pairs.Count(p => p.Left.Trim().Length >= EvaluationDataset.LongTranspositionLength);
+
+        Assert.True(longPairs >= 5, $"nm-transposition needs at least 5 pairs of {EvaluationDataset.LongTranspositionLength}+ letters, found {longPairs}.");
+    }
+
+    [Fact]
+    public void Dataset_TypoCategoryIsNotOnlySwaps()
+    {
+        var nonSwaps = Pairs.Value.Count(p => p.Category == "typo" && !EvaluationDataset.IsSingleAdjacentSwap(p.Left, p.Right));
+
+        Assert.True(nonSwaps >= 20, $"typo needs at least 20 pairs that are not a single adjacent swap, found {nonSwaps}.");
+    }
+
     [Fact]
     public void Dataset_SplitMatchesTheHashAndHasTheExpectedShare()
     {

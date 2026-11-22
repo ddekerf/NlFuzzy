@@ -72,6 +72,7 @@ public sealed class NlFuzzy.DutchFuzzyOptions
     System.Double NGramWeight { get; set; }
     System.Double OrthographicWeight { get; set; }
     System.Double PhoneticWeight { get; set; }
+    System.Double TranspositionFloor { get; set; }
     System.Int32 GetHashCode()
     System.Int32 MaxKeyLength { get; set; }
     System.String ToString()
