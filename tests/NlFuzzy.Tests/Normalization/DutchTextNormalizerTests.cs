@@ -143,14 +143,80 @@ public class DutchTextNormalizerTests
         Assert.Throws<ArgumentNullException>(() => Normalizer.Normalize("kuipers", null!));
     }
 
-    [Fact]
-    public void Normalize_KeepsDiacriticsWhenDisabled()
-    {
-        var options = Plain with { RemoveDiacritics = false };
+    private static readonly DutchFuzzyOptions KeepAccents = Plain with { RemoveDiacritics = false };
 
-        // The diacritic itself is not a letter a-z, so it is dropped by the letter filter
-        // instead of being folded onto its base letter.
-        Assert.Equal("ren e", Normalizer.Normalize("Ren\u00e9e", options));
+    [Theory]
+    [InlineData("Ren\u00e9e", "ren\u00e9e")]
+    [InlineData("C\u00e9line", "c\u00e9line")]
+    [InlineData("Fran\u00e7ois", "fran\u00e7ois")]
+    [InlineData("M\u00fcller", "m\u00fcller")]
+    [InlineData("H\u00c9L\u00c8NE", "h\u00e9l\u00e8ne")]
+    public void Normalize_KeepsAccentedLettersWhenFoldingIsDisabled(string input, string expected)
+    {
+        Assert.Equal(expected, Normalizer.Normalize(input, KeepAccents));
+    }
+
+    [Theory]
+    [InlineData('é', true)]
+    [InlineData('ü', true)]
+    [InlineData('ç', true)]
+    [InlineData('ñ', true)]
+    [InlineData('å', true)]
+    [InlineData('É', true)]
+    [InlineData('ł', false)]
+    [InlineData('ø', false)]
+    [InlineData('ω', false)]
+    [InlineData('ạ', false)]
+    [InlineData('e', false)]
+    [InlineData('ß', false)]
+    public void IsKeptAccentedLetter_KeepsOnlyAccentedLatinLetters(char c, bool expected)
+    {
+        Assert.Equal(expected, DutchTextNormalizer.IsKeptAccentedLetter(c));
+    }
+
+    [Fact]
+    public void IsKeptAccentedLetter_TableMatchesTheRule()
+    {
+        for (var c = 'À'; c <= 'ɏ'; c++)
+        {
+            Assert.True(
+                DutchTextNormalizer.DecomposesToAccentedLatinLetter(c) == DutchTextNormalizer.IsKeptAccentedLetter(c),
+                $"U+{(int)c:X4} differs between the table and the rule.");
+        }
+    }
+
+    [Fact]
+    public void Normalize_ComposesDecomposedInputWhenFoldingIsDisabled()
+    {
+        Assert.Equal("ren\u00e9e", Normalizer.Normalize("Rene\u0301e", KeepAccents));
+        Assert.Equal("ren\u00e9e", Normalizer.Normalize("Ren\u00e9e", KeepAccents));
+    }
+
+    [Theory]
+    [InlineData("Jan \u0141ukasz")]
+    [InlineData("\u03a9mega")]
+    [InlineData("Stra\u00dfe")]
+    [InlineData("\u0132sselmeer")]
+    [InlineData("Kuipers 123")]
+    public void Normalize_TreatsOtherCharactersAlikeWithAndWithoutFolding(string input)
+    {
+        Assert.Equal(Normalizer.Normalize(input, Plain), Normalizer.Normalize(input, KeepAccents));
+    }
+
+    [Fact]
+    public void Normalize_ExpandsSpecialLettersWhenFoldingIsDisabled()
+    {
+        Assert.Equal("strasse", Normalizer.Normalize("Stra\u00dfe", KeepAccents));
+        Assert.Equal("ijsselmeer", Normalizer.Normalize("\u0132sselmeer", KeepAccents));
+    }
+
+    [Fact]
+    public void Normalize_ExpandsTheElidedArticleBeforeAnAccentedName()
+    {
+        var names = DutchFuzzyOptions.Names;
+
+        Assert.Equal("\u00e9t\u00e9 de", Normalizer.Normalize("d'\u00c9t\u00e9", names with { RemoveDiacritics = false }));
+        Assert.Equal("ete de", Normalizer.Normalize("d'\u00c9t\u00e9", names));
     }
 
     [Theory]
