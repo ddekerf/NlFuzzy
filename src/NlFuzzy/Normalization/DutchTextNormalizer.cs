@@ -87,10 +87,11 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
     private const char LastAccentedLetter = 'ɏ';
 
     /// <summary>
-    /// For every character from U+00C0 to U+024F (Latin-1 Supplement and Latin Extended-A/B): whether
-    /// it decomposes to one letter a-z followed only by combining marks. Built once.
+    /// For every character from U+00C0 to U+024F (Latin-1 Supplement and Latin Extended-A/B): its
+    /// lower-case base letter a-z when it decomposes to that letter followed only by combining marks,
+    /// otherwise '\0'. Built once.
     /// </summary>
-    private static readonly bool[] KeptAccentedLetters = BuildKeptAccentedLetters();
+    private static readonly char[] KeptAccentedLetters = BuildKeptAccentedLetters();
 
     /// <summary>
     /// True for an accented Latin letter that the normalizer keeps when diacritic folding is off:
@@ -98,8 +99,44 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
     /// followed only by combining marks ("é", "ü", "ç", "ñ", "å"). Letters without such a
     /// decomposition ("ł", "ø") and characters outside that range are not kept.
     /// </summary>
-    internal static bool IsKeptAccentedLetter(char c) =>
-        c >= FirstAccentedLetter && c <= LastAccentedLetter && KeptAccentedLetters[c - FirstAccentedLetter];
+    internal static bool IsKeptAccentedLetter(char c) => BaseLetter(c) != '\0';
+
+    /// <summary>
+    /// Maps a kept accented letter to its lower-case base letter ("é" to "e"), and returns every other
+    /// character unchanged. The mapping is one to one, so positions in a token stay aligned.
+    /// </summary>
+    internal static char FoldKeptAccent(char c)
+    {
+        var baseLetter = BaseLetter(c);
+
+        return baseLetter == '\0' ? c : baseLetter;
+    }
+
+    /// <summary>
+    /// <see cref="FoldKeptAccent"/> applied to every character, so "dé" becomes "de". Returns the
+    /// value itself when it has nothing to fold. Name-particle checks use this, so they decide the
+    /// same way whether or not diacritics were folded.
+    /// </summary>
+    internal static string FoldKeptAccents(string value)
+    {
+        char[]? folded = null;
+
+        for (var i = 0; i < value.Length; i++)
+        {
+            var baseLetter = BaseLetter(value[i]);
+
+            if (baseLetter != '\0')
+            {
+                folded ??= value.ToCharArray();
+                folded[i] = baseLetter;
+            }
+        }
+
+        return folded is null ? value : new string(folded);
+    }
+
+    private static char BaseLetter(char c) =>
+        c >= FirstAccentedLetter && c <= LastAccentedLetter ? KeptAccentedLetters[c - FirstAccentedLetter] : '\0';
 
     /// <summary>The rule behind <see cref="IsKeptAccentedLetter"/>, computed without the table.</summary>
     internal static bool DecomposesToAccentedLatinLetter(char c)
@@ -129,21 +166,55 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
         return true;
     }
 
-    private static bool[] BuildKeptAccentedLetters()
+    private static char[] BuildKeptAccentedLetters()
     {
-        var table = new bool[LastAccentedLetter - FirstAccentedLetter + 1];
+        var table = new char[LastAccentedLetter - FirstAccentedLetter + 1];
 
         for (var i = 0; i < table.Length; i++)
         {
-            table[i] = DecomposesToAccentedLatinLetter((char)(FirstAccentedLetter + i));
+            var c = (char)(FirstAccentedLetter + i);
+
+            if (DecomposesToAccentedLatinLetter(c))
+            {
+                table[i] = char.ToLowerInvariant(c.ToString().Normalize(NormalizationForm.FormD)[0]);
+            }
         }
 
         return table;
     }
 
-    /// <summary>Composes the text to Unicode form C, so "e" plus a combining acute becomes "é".</summary>
-    private static string ComposeAccents(string value) =>
-        IsPlainAscii(value) ? value : value.Normalize(NormalizationForm.FormC);
+    /// <summary>
+    /// Composes the text to Unicode form C, so "e" plus a combining acute becomes "é", and keeps the
+    /// accented Latin letters (<see cref="IsKeptAccentedLetter"/>). Every other non-ASCII character is
+    /// folded exactly as with diacritic folding on: a lone combining mark disappears, "ǽ" becomes "æ"
+    /// and "ḱ" becomes "k". So the text only differs from the folded text in the kept letters.
+    /// </summary>
+    private static string ComposeAccents(string value)
+    {
+        if (IsPlainAscii(value))
+        {
+            return value;
+        }
+
+        var composed = value.Normalize(NormalizationForm.FormC);
+        StringBuilder? builder = null;
+
+        for (var i = 0; i < composed.Length; i++)
+        {
+            var c = composed[i];
+
+            if (c <= '\u007f' || IsKeptAccentedLetter(c))
+            {
+                builder?.Append(c);
+                continue;
+            }
+
+            builder ??= new StringBuilder(composed.Length).Append(composed, 0, i);
+            builder.Append(RemoveDiacritics(c.ToString()));
+        }
+
+        return builder?.ToString() ?? composed;
+    }
 
     private static bool IsKeptLetter(char c, bool keepAccents) =>
         (c >= 'a' && c <= 'z') || (keepAccents && IsKeptAccentedLetter(c));
@@ -167,7 +238,7 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
 
         for (var i = 0; i + 1 < value.Length; i++)
         {
-            if (value[i] != 'd' || !IsApostrophe(value[i + 1]))
+            if (FoldKeptAccent(value[i]) != 'd' || !IsApostrophe(value[i + 1]))
             {
                 continue;
             }

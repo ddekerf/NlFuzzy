@@ -137,11 +137,6 @@ public class PropertyTests
             var composed = value.Normalize(NormalizationForm.FormC);
             var decomposed = value.Normalize(NormalizationForm.FormD);
 
-            if (!options.RemoveDiacritics)
-            {
-                continue;
-            }
-
             Assert.Equal(
                 DutchFuzzy.PhoneticKey(composed, options),
                 DutchFuzzy.PhoneticKey(decomposed, options));
@@ -150,6 +145,28 @@ public class PropertyTests
                 DutchFuzzy.Similarity(composed, "Kuipers", options),
                 DutchFuzzy.Similarity(decomposed, "Kuipers", options),
                 10);
+        }
+    }
+
+    [Fact]
+    public void PhoneticKey_DoesNotDependOnRemoveDiacritics()
+    {
+        var random = new Random(5);
+
+        for (var i = 0; i < Iterations; i++)
+        {
+            var options = Profiles[random.Next(Profiles.Length)];
+            var value = RandomText(random);
+
+            if (random.Next(2) == 0)
+            {
+                value = value.Normalize(NormalizationForm.FormD);
+            }
+
+            Assert.True(
+                DutchFuzzy.PhoneticKey(value, options with { RemoveDiacritics = true })
+                == DutchFuzzy.PhoneticKey(value, options with { RemoveDiacritics = false }),
+                $"Key differs for '{value}'.");
         }
     }
 

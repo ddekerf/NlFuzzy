@@ -210,6 +210,39 @@ public class DutchTextNormalizerTests
         Assert.Equal("ijsselmeer", Normalizer.Normalize("\u0132sselmeer", KeepAccents));
     }
 
+    [Theory]
+    [InlineData("dé Vries", "vries dé", "vries de")]
+    [InlineData("Vándenbroecke", "broecke van den", "broecke van den")]
+    [InlineData("ď'Hondt", "hondt de", "hondt de")]
+    [InlineData("Dhóndt", "hóndt de", "hondt de")]
+    public void Normalize_RecognisesAccentedParticlesWhenFoldingIsDisabled(string input, string kept, string folded)
+    {
+        var names = DutchFuzzyOptions.Names;
+
+        Assert.Equal(kept, Normalizer.Normalize(input, names with { RemoveDiacritics = false }));
+        Assert.Equal(folded, Normalizer.Normalize(input, names));
+        Assert.Equal(DutchFuzzy.PhoneticKey(input, names), DutchFuzzy.PhoneticKey(input, names with { RemoveDiacritics = false }));
+    }
+
+    [Fact]
+    public void IsParticle_IgnoresAccents()
+    {
+        Assert.True(DutchAffixes.IsParticle("dé"));
+        Assert.True(DutchAffixes.IsParticle("ván"));
+        Assert.False(DutchAffixes.IsParticle("vries"));
+    }
+
+    [Theory]
+    [InlineData("ǽ", "ae")]
+    [InlineData("ḱ", "k")]
+    [InlineData("t́", "t")]
+    [InlineData("ạ", "a")]
+    public void Normalize_FoldsCharactersItDoesNotKeep(string input, string expected)
+    {
+        Assert.Equal(expected, Normalizer.Normalize(input, KeepAccents));
+        Assert.Equal(expected, Normalizer.Normalize(input, Plain));
+    }
+
     [Fact]
     public void Normalize_ExpandsTheElidedArticleBeforeAnAccentedName()
     {

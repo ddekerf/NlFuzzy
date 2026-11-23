@@ -48,6 +48,13 @@ Dutch, Flemish, French, German and the Scandinavian languages use.
 *Alternative: keep everything for which `char.IsLetter` is true.* Rejected by choice: non-Latin letters
 would then count for spelling only, and the encoder has no rules for them.
 
+*Revised during implementation:* every non-ASCII character that is not kept is folded exactly as with
+folding on, instead of being left for the letter filter. Otherwise `ǽ` (`æ` + accent, base not `a`–`z`)
+became a separator instead of `ae`, a lone combining mark after `t` split the word, and `ạ` (U+1EA1,
+outside the table) became a separator instead of `a`. The keep-mode text now differs from the folded
+text only in the kept letters, and each kept letter maps to exactly one base letter. The table stores
+that base letter, not just a flag.
+
 ### 2. The encoder folds each token
 `DutchPhoneticEncoder.EncodeToken` starts by folding the token with the existing diacritic removal when
 it contains a character above U+007F, before the `-sen` rule and the rule table. With every preset the
@@ -69,16 +76,28 @@ folding off, and keys, `SoundsLike` and index blocking stay stable.
 `d'Été` becomes `de été` → `été de` without folding, just as it becomes `ete de` with folding. The
 check that the `d` starts a token already uses `char.IsLetter` and stays as it is.
 
-### 5. Other code that assumes `a`–`z`
-- `DutchAffixes` compares tokens with ASCII particle lists. An accented particle (`dé`) is not a
-  particle in either mode, so nothing changes.
-- The `TranspositionFloor` check and the Dice bigram packing work on any UTF-16 characters.
+### 5. Name particles decide on the folded token
+*Revised during implementation.* The plan said that `DutchAffixes` was unaffected because "an accented
+particle is not a particle in either mode". That was wrong. With folding on, `dé` becomes `de` and is
+moved to the end. With folding off it stayed in front, so the token order and the key differed. A
+property test found it (`ó` as the particle `o`).
+
+`DutchAffixes` now makes every decision (particle lists, never-split list, glued prefixes, plausible
+stem start, `dh` + vowel) on `FoldKeptAccents(token)`. Because that maps one character to one, it can
+still copy stems with their accents from the original token. A rewritten glued prefix is emitted in
+ASCII (`ván` + `den…` → `van den …`), just as with folding on. The elided-article check compares the
+folded `ď` too. The public `DutchAffixes.IsParticle` ignores accents as a result (`dé` → true).
+
+### 6. Other code that assumes `a`–`z`
+The `TranspositionFloor` check and the Dice bigram packing work on any UTF-16 characters.
 
 ## Risks / Trade-offs
 
-- [A precomposed letter outside U+00C0–U+024F, such as Vietnamese `ạ` (U+1EA1), stays a separator with
-  folding off] → This matches the requested scope (accented Latin letters). It is documented in the
-  XML doc, and folding on still handles it.
+- [A precomposed letter outside U+00C0–U+024F, such as Vietnamese `ạ` (U+1EA1), loses its accent even
+  with folding off (`ạ` → `a`)] → This matches the requested scope (accented Latin letters in the
+  common range), and it behaves exactly as with folding on. It is documented in the XML doc.
+- [`DutchAffixes.IsParticle` now ignores accents] → A public method answers differently for accented
+  input (`dé`). Recorded in the CHANGELOG; no ASCII input is affected.
 - [Callers who relied on the old splitting] → Unlikely: the old output was broken (`c line`). It is
   recorded under "Opgelost" in the CHANGELOG.
 - [Hot path] → Every preset folds, so normalization takes the same path as before, and the encoder

@@ -86,10 +86,12 @@ public static class DutchAffixes
 
     /// <summary>
     /// Returns true when <paramref name="token"/> is a Dutch name particle such as "van" or "der".
+    /// Accented Latin letters count as their base letter, so "dé" is the particle "de".
     /// </summary>
     /// <param name="token">A single lower-case token.</param>
     /// <returns>True when the token is a particle.</returns>
-    public static bool IsParticle(string token) => token is not null && Particles.Contains(token);
+    public static bool IsParticle(string token) =>
+        token is not null && Particles.Contains(DutchTextNormalizer.FoldKeptAccents(token));
 
     /// <summary>
     /// Moves a leading run of name particles to the end of the string, so that
@@ -224,12 +226,16 @@ public static class DutchAffixes
 
     private static string SplitToken(string token, bool honourNeverSplit = true)
     {
-        if (Particles.Contains(token) || GluedOnlyParticles.Contains(token))
+        // Decide on the folded token ("vándenbroecke" as "vandenbroecke"), but keep the accents in the
+        // output. Folding maps one character to one, so positions line up.
+        var folded = DutchTextNormalizer.FoldKeptAccents(token);
+
+        if (Particles.Contains(folded) || GluedOnlyParticles.Contains(folded))
         {
             return token;
         }
 
-        if (honourNeverSplit && NeverSplit.Contains(token))
+        if (honourNeverSplit && NeverSplit.Contains(folded))
         {
             return token;
         }
@@ -243,12 +249,12 @@ public static class DutchAffixes
                 continue;
             }
 
-            if (!token.StartsWith(glued, StringComparison.Ordinal))
+            if (!folded.StartsWith(glued, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            if (!IsPlausibleStemStart(token, glued.Length))
+            if (!IsPlausibleStemStart(folded, glued.Length))
             {
                 continue;
             }
@@ -258,9 +264,9 @@ public static class DutchAffixes
 
         // "Dhondt", "Dhaene": the apostrophe-less spelling of the elided article in D'Hondt.
         if (token.Length >= MinimumElidedDhLength
-            && token[0] == 'd'
-            && token[1] == 'h'
-            && IsVowel(token[2]))
+            && folded[0] == 'd'
+            && folded[1] == 'h'
+            && IsVowel(folded[2]))
         {
             return "de " + token.Substring(1);
         }
@@ -290,6 +296,10 @@ public static class DutchAffixes
 
     private static bool IsVowel(char c) => c is 'a' or 'e' or 'i' or 'o' or 'u' or 'y';
 
-    private static bool IsRecognisedParticle(string token, bool includeGluedOnlyParticles) =>
-        Particles.Contains(token) || (includeGluedOnlyParticles && GluedOnlyParticles.Contains(token));
+    private static bool IsRecognisedParticle(string token, bool includeGluedOnlyParticles)
+    {
+        var folded = DutchTextNormalizer.FoldKeptAccents(token);
+
+        return Particles.Contains(folded) || (includeGluedOnlyParticles && GluedOnlyParticles.Contains(folded));
+    }
 }
