@@ -217,6 +217,32 @@ public class DutchPhoneticEncoderTests
         Assert.NotEqual(Tolerant.Encode("Willemsen"), Tolerant.Encode("Willemse"));
     }
 
+    [Theory]
+    [InlineData("Céline", "SLN")]
+    [InlineData("Hélène", "ALN")]
+    [InlineData("coördinatie", "KRTNS")]
+    [InlineData("Müller", "MLR")]
+    public void Encode_FoldsDiacriticsRegardlessOfRemoveDiacritics(string value, string key)
+    {
+        var keepAccents = new DutchPhoneticEncoder(DutchFuzzyOptions.Default with { RemoveDiacritics = false });
+
+        Assert.Equal(key, Tolerant.Encode(value));
+        Assert.Equal(key, keepAccents.Encode(value));
+    }
+
+    [Fact]
+    public void Encode_FoldsAccentedTextFromACustomNormalizer()
+    {
+        var encoder = new DutchPhoneticEncoder(DutchFuzzyOptions.Default, new FixedNormalizer("céline"));
+
+        Assert.Equal("SLN", encoder.Encode("anything"));
+    }
+
+    private sealed class FixedNormalizer(string result) : NlFuzzy.Normalization.IDutchTextNormalizer
+    {
+        public string Normalize(string value, DutchFuzzyOptions options) => result;
+    }
+
     [Fact]
     public void MergeSeSenEndings_AppliesPerToken()
     {

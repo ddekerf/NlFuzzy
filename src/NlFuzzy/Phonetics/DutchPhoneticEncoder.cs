@@ -110,6 +110,10 @@ public sealed class DutchPhoneticEncoder : IPhoneticEncoder
 
     private string EncodeToken(string token, ICollection<int>? usedRuleIds)
     {
+        // Keys never depend on RemoveDiacritics: accented letters that the normalizer kept (or that a
+        // custom normalizer returned) are encoded as their base letters.
+        token = FoldDiacritics(token);
+
         if (_options.MergeSeSenEndings && IsSenOrZenEnding(token))
         {
             // Patronymics alternate between -sen and -se (Willemsen, Willemse): drop the final n.
@@ -135,6 +139,19 @@ public sealed class DutchPhoneticEncoder : IPhoneticEncoder
         }
 
         return PostProcess(builder.ToString());
+    }
+
+    private static string FoldDiacritics(string token)
+    {
+        foreach (var c in token)
+        {
+            if (c > '\u007f')
+            {
+                return Normalization.DutchTextNormalizer.FoldForPhonetics(token);
+            }
+        }
+
+        return token;
     }
 
     private string PostProcess(string raw)

@@ -139,6 +139,17 @@ public class DutchFuzzyScorerTests
     }
 
     [Fact]
+    public void KeepingDiacritics_CountsAccentsForSpellingOnly()
+    {
+        var keepAccents = DutchFuzzyOptions.Default with { RemoveDiacritics = false };
+        var score = DutchFuzzy.Similarity("Céline", "Celine", keepAccents);
+
+        Assert.True("Céline".SoundsLikeDutch("Celine", keepAccents));
+        Assert.InRange(score, 0.90, 0.9999);
+        Assert.Equal(1d, DutchFuzzy.Similarity("Céline", "Celine"), 10);
+    }
+
+    [Fact]
     public void Weights_ChangeTheOutcome()
     {
         var phoneticOnly = new DutchFuzzyScorer(DutchFuzzyOptions.Names with
