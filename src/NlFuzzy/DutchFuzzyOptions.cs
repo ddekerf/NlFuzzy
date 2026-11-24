@@ -40,7 +40,19 @@ public sealed record DutchFuzzyOptions
     /// <summary>Phonetic profile. Default: <see cref="DutchPhoneticProfile.Tolerant"/>.</summary>
     public DutchPhoneticProfile Profile { get; init; } = DutchPhoneticProfile.Tolerant;
 
-    /// <summary>Remove diacritics before encoding. Default: true.</summary>
+    /// <summary>
+    /// Fold accented letters onto their base letter during normalization ("Céline" becomes "celine").
+    /// Default: true.
+    /// </summary>
+    /// <remarks>
+    /// When false, accented Latin letters stay in the normalized text ("céline"), so the spelling
+    /// components of the score see the accent: "Céline" and "Celine" score at least
+    /// <see cref="IdenticalKeyFloor"/> but below 1.0. The phonetic key always folds accents, so
+    /// <c>PhoneticKey</c>, <c>SoundsLike</c>, the equality comparer and index blocking do not depend
+    /// on this option, and name particles are recognized with or without accents ("dé" is "de").
+    /// Only letters from U+00C0 to U+024F that decompose to a-z plus combining marks are kept; every
+    /// other character is handled exactly as when this option is true.
+    /// </remarks>
     public bool RemoveDiacritics { get; init; } = true;
 
     /// <summary>

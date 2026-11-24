@@ -110,7 +110,14 @@ public static class DutchAffixes
     /// when glued-prefix splitting is enabled.
     /// </param>
     /// <returns>The rewritten string. Returns the input when there is nothing to move.</returns>
-    public static string MovePrefixesToEnd(string value, bool includeGluedOnlyParticles)
+    public static string MovePrefixesToEnd(string value, bool includeGluedOnlyParticles) =>
+        MovePrefixesToEnd(value, includeGluedOnlyParticles, foldAccents: true);
+
+    /// <summary>
+    /// <see cref="MovePrefixesToEnd(string, bool)"/>, where <paramref name="foldAccents"/> false skips
+    /// the accent folding of each token. Only for text that is known to be plain a-z.
+    /// </summary>
+    internal static string MovePrefixesToEnd(string value, bool includeGluedOnlyParticles, bool foldAccents)
     {
         if (string.IsNullOrEmpty(value))
         {
@@ -128,7 +135,7 @@ public static class DutchAffixes
 
         while (leading < tokens.Length - 1
                && leading < MaxLeadingParticles
-               && IsRecognisedParticle(tokens[leading], includeGluedOnlyParticles))
+               && IsRecognisedParticle(tokens[leading], includeGluedOnlyParticles, foldAccents))
         {
             leading++;
         }
@@ -142,7 +149,7 @@ public static class DutchAffixes
 
         for (var i = leading; i < tokens.Length; i++)
         {
-            if (!IsRecognisedParticle(tokens[i], includeGluedOnlyParticles))
+            if (!IsRecognisedParticle(tokens[i], includeGluedOnlyParticles, foldAccents))
             {
                 hasStem = true;
                 break;
@@ -195,7 +202,13 @@ public static class DutchAffixes
     /// form of the elided article: "dhondt" becomes "de hondt", like "D'Hondt".
     /// </para>
     /// </remarks>
-    public static string SplitGluedPrefixes(string value)
+    public static string SplitGluedPrefixes(string value) => SplitGluedPrefixes(value, foldAccents: true);
+
+    /// <summary>
+    /// <see cref="SplitGluedPrefixes(string)"/>, where <paramref name="foldAccents"/> false skips the
+    /// accent folding of each token. Only for text that is known to be plain a-z.
+    /// </summary>
+    internal static string SplitGluedPrefixes(string value, bool foldAccents)
     {
         if (string.IsNullOrEmpty(value))
         {
@@ -212,7 +225,7 @@ public static class DutchAffixes
                 builder.Append(' ');
             }
 
-            builder.Append(SplitToken(token));
+            builder.Append(SplitToken(token, honourNeverSplit: true, foldAccents));
         }
 
         return builder.ToString();
@@ -222,13 +235,13 @@ public static class DutchAffixes
     internal static IReadOnlyCollection<string> NeverSplitTokens => NeverSplit;
 
     /// <summary>Splits a single token as if the never-split list were empty. For tests only.</summary>
-    internal static string SplitGluedPrefixesIgnoringExceptions(string token) => SplitToken(token, honourNeverSplit: false);
+    internal static string SplitGluedPrefixesIgnoringExceptions(string token) => SplitToken(token, honourNeverSplit: false, foldAccents: true);
 
-    private static string SplitToken(string token, bool honourNeverSplit = true)
+    private static string SplitToken(string token, bool honourNeverSplit, bool foldAccents)
     {
         // Decide on the folded token ("vándenbroecke" as "vandenbroecke"), but keep the accents in the
         // output. Folding maps one character to one, so positions line up.
-        var folded = DutchTextNormalizer.FoldKeptAccents(token);
+        var folded = foldAccents ? DutchTextNormalizer.FoldKeptAccents(token) : token;
 
         if (Particles.Contains(folded) || GluedOnlyParticles.Contains(folded))
         {
@@ -296,9 +309,9 @@ public static class DutchAffixes
 
     private static bool IsVowel(char c) => c is 'a' or 'e' or 'i' or 'o' or 'u' or 'y';
 
-    private static bool IsRecognisedParticle(string token, bool includeGluedOnlyParticles)
+    private static bool IsRecognisedParticle(string token, bool includeGluedOnlyParticles, bool foldAccents)
     {
-        var folded = DutchTextNormalizer.FoldKeptAccents(token);
+        var folded = foldAccents ? DutchTextNormalizer.FoldKeptAccents(token) : token;
 
         return Particles.Contains(folded) || (includeGluedOnlyParticles && GluedOnlyParticles.Contains(folded));
     }

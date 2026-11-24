@@ -50,23 +50,36 @@
 
 ## 3. Properties and regression
 
-- [ ] 3.1 In `PropertyTests`, stop skipping `RemoveDiacritics = false` in the canonical-equivalence
+- [x] 3.1 In `PropertyTests`, stop skipping `RemoveDiacritics = false` in the canonical-equivalence
   property. With folding off, composed and decomposed input must still give the same key and score.
   Verify that every property test (idempotence, finite, symmetric, [0, 1]) passes for all profiles.
-- [ ] 3.2 Run the evaluation tests and the core golden tests. They must be unchanged, because every
+- [x] 3.2 Run the evaluation tests and the core golden tests. They must be unchanged, because every
   preset folds. Verify that the evaluation baseline needs no rewrite.
-- [ ] 3.3 Run the scorer benchmark (`bench/NlFuzzy.Benchmarks`, `--job short --inProcess`) before and
+- [x] 3.3 Run the scorer benchmark (`bench/NlFuzzy.Benchmarks`, `--job short --inProcess`) before and
   after, and verify that it is no more than 5% slower.
+  - The short job was too noisy (±1 µs), so old and new code were compared side by side, using a
+    worktree at the proposal commit and medium jobs.
+  - The first reliable pair put `SingleTokenScore` 5.4% slower, over budget. The cause was the
+    accent-blind particle checks scanning every token. They now skip that scan when the normalizer
+    knows the text is plain a-z (folding on), via an internal `foldAccents` flag in `DutchAffixes`.
+    The public methods stay accent-blind.
+  - `Score` turned out to be bimodal: the unchanged code itself measured about 1.3 µs in some runs and
+    about 1.7 µs in others. So the final check ran out of process with four launches per side:
+    1,668 → 1,700 ns (+1.9%).
+  - `SingleTokenScore`, median of three alternating pairs: 1,039 → 1,043 ns (+0.4%).
+  - Both are within budget.
 
 ## 4. Docs
 
-- [ ] 4.1 Update the XML doc of `DutchFuzzyOptions.RemoveDiacritics`. False keeps accented Latin letters
+- [x] 4.1 Update the XML doc of `DutchFuzzyOptions.RemoveDiacritics`. False keeps accented Latin letters
   in the text for the spelling components, while keys always fold. Name the range limit from design.md
   §1.
-- [ ] 4.2 Add a CHANGELOG `[Unreleased]` entry under "Opgelost": what the option did before
+- [x] 4.2 Add a CHANGELOG `[Unreleased]` entry under "Opgelost": what the option did before
   (`Céline` → `c line`, key `K LN`) and what it does now.
 
 ## 5. Integration check
 
-- [ ] 5.1 Run the full `dotnet test -c Release` suite and build all three TFMs without warnings. Confirm
+- [x] 5.1 Run the full `dotnet test -c Release` suite and build all three TFMs without warnings. Confirm
   that line coverage stays at or above the 95% gate.
+  - 709 tests pass on net10.0 (Release); all three TFMs rebuild from scratch with 0 warnings; line
+    coverage 97.66% against the 95% gate. The net8.0 test run is left to CI.

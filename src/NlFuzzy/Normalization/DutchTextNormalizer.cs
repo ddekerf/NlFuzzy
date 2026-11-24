@@ -52,12 +52,12 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
 
         if (options.SplitGluedNamePrefixes)
         {
-            cleaned = DutchAffixes.SplitGluedPrefixes(cleaned);
+            cleaned = DutchAffixes.SplitGluedPrefixes(cleaned, foldAccents: keepAccents);
         }
 
         if (options.StripNamePrefixes)
         {
-            cleaned = DutchAffixes.MovePrefixesToEnd(cleaned, options.SplitGluedNamePrefixes);
+            cleaned = DutchAffixes.MovePrefixesToEnd(cleaned, options.SplitGluedNamePrefixes, foldAccents: keepAccents);
         }
 
         return cleaned;
