@@ -36,12 +36,14 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
 
         // The elided article is a name particle, so it follows the name-particle switch:
         // "D'Hondt" is "De Hondt", but ordinary words such as "d'accord" stay as they are.
+        var keepAccents = !options.RemoveDiacritics;
+
         if (options.StripNamePrefixes)
         {
-            folded = ExpandElidedArticles(folded);
+            folded = ExpandElidedArticles(folded, keepAccents);
         }
 
-        var cleaned = KeepLettersAndSpaces(folded);
+        var cleaned = KeepLettersAndSpaces(folded, keepAccents);
 
         if (cleaned.Length == 0)
         {
@@ -50,12 +52,12 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
 
         if (options.SplitGluedNamePrefixes)
         {
-            cleaned = DutchAffixes.SplitGluedPrefixes(cleaned);
+            cleaned = DutchAffixes.SplitGluedPrefixes(cleaned, foldAccents: keepAccents);
         }
 
         if (options.StripNamePrefixes)
         {
-            cleaned = DutchAffixes.MovePrefixesToEnd(cleaned, options.SplitGluedNamePrefixes);
+            cleaned = DutchAffixes.MovePrefixesToEnd(cleaned, options.SplitGluedNamePrefixes, foldAccents: keepAccents);
         }
 
         return cleaned;
@@ -73,10 +75,149 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
     internal static string FoldForPhonetics(string value, bool removeDiacritics = true)
     {
         var lowered = value.ToLowerInvariant();
-        var folded = removeDiacritics ? RemoveDiacritics(lowered) : lowered;
+        var folded = removeDiacritics ? RemoveDiacritics(lowered) : ComposeAccents(lowered);
 
         return ExpandSpecialCharacters(folded);
     }
+
+    /// <summary>The first character covered by <see cref="KeptAccentedLetters"/>.</summary>
+    private const char FirstAccentedLetter = 'À';
+
+    /// <summary>The last character covered by <see cref="KeptAccentedLetters"/>.</summary>
+    private const char LastAccentedLetter = 'ɏ';
+
+    /// <summary>
+    /// For every character from U+00C0 to U+024F (Latin-1 Supplement and Latin Extended-A/B): its
+    /// lower-case base letter a-z when it decomposes to that letter followed only by combining marks,
+    /// otherwise '\0'. Built once.
+    /// </summary>
+    private static readonly char[] KeptAccentedLetters = BuildKeptAccentedLetters();
+
+    /// <summary>
+    /// True for an accented Latin letter that the normalizer keeps when diacritic folding is off:
+    /// a character from U+00C0 to U+024F whose canonical decomposition is one letter a-z (either case)
+    /// followed only by combining marks ("é", "ü", "ç", "ñ", "å"). Letters without such a
+    /// decomposition ("ł", "ø") and characters outside that range are not kept.
+    /// </summary>
+    internal static bool IsKeptAccentedLetter(char c) => BaseLetter(c) != '\0';
+
+    /// <summary>
+    /// Maps a kept accented letter to its lower-case base letter ("é" to "e"), and returns every other
+    /// character unchanged. The mapping is one to one, so positions in a token stay aligned.
+    /// </summary>
+    internal static char FoldKeptAccent(char c)
+    {
+        var baseLetter = BaseLetter(c);
+
+        return baseLetter == '\0' ? c : baseLetter;
+    }
+
+    /// <summary>
+    /// <see cref="FoldKeptAccent"/> applied to every character, so "dé" becomes "de". Returns the
+    /// value itself when it has nothing to fold. Name-particle checks use this, so they decide the
+    /// same way whether or not diacritics were folded.
+    /// </summary>
+    internal static string FoldKeptAccents(string value)
+    {
+        char[]? folded = null;
+
+        for (var i = 0; i < value.Length; i++)
+        {
+            var baseLetter = BaseLetter(value[i]);
+
+            if (baseLetter != '\0')
+            {
+                folded ??= value.ToCharArray();
+                folded[i] = baseLetter;
+            }
+        }
+
+        return folded is null ? value : new string(folded);
+    }
+
+    private static char BaseLetter(char c) =>
+        c >= FirstAccentedLetter && c <= LastAccentedLetter ? KeptAccentedLetters[c - FirstAccentedLetter] : '\0';
+
+    /// <summary>The rule behind <see cref="IsKeptAccentedLetter"/>, computed without the table.</summary>
+    internal static bool DecomposesToAccentedLatinLetter(char c)
+    {
+        var decomposed = c.ToString().Normalize(NormalizationForm.FormD);
+
+        if (decomposed.Length < 2)
+        {
+            return false;
+        }
+
+        var baseLetter = char.ToLowerInvariant(decomposed[0]);
+
+        if (baseLetter < 'a' || baseLetter > 'z')
+        {
+            return false;
+        }
+
+        for (var i = 1; i < decomposed.Length; i++)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(decomposed[i]) != UnicodeCategory.NonSpacingMark)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static char[] BuildKeptAccentedLetters()
+    {
+        var table = new char[LastAccentedLetter - FirstAccentedLetter + 1];
+
+        for (var i = 0; i < table.Length; i++)
+        {
+            var c = (char)(FirstAccentedLetter + i);
+
+            if (DecomposesToAccentedLatinLetter(c))
+            {
+                table[i] = char.ToLowerInvariant(c.ToString().Normalize(NormalizationForm.FormD)[0]);
+            }
+        }
+
+        return table;
+    }
+
+    /// <summary>
+    /// Composes the text to Unicode form C, so "e" plus a combining acute becomes "é", and keeps the
+    /// accented Latin letters (<see cref="IsKeptAccentedLetter"/>). Every other non-ASCII character is
+    /// folded exactly as with diacritic folding on: a lone combining mark disappears, "ǽ" becomes "æ"
+    /// and "ḱ" becomes "k". So the text only differs from the folded text in the kept letters.
+    /// </summary>
+    private static string ComposeAccents(string value)
+    {
+        if (IsPlainAscii(value))
+        {
+            return value;
+        }
+
+        var composed = value.Normalize(NormalizationForm.FormC);
+        StringBuilder? builder = null;
+
+        for (var i = 0; i < composed.Length; i++)
+        {
+            var c = composed[i];
+
+            if (c <= '\u007f' || IsKeptAccentedLetter(c))
+            {
+                builder?.Append(c);
+                continue;
+            }
+
+            builder ??= new StringBuilder(composed.Length).Append(composed, 0, i);
+            builder.Append(RemoveDiacritics(c.ToString()));
+        }
+
+        return builder?.ToString() ?? composed;
+    }
+
+    private static bool IsKeptLetter(char c, bool keepAccents) =>
+        (c >= 'a' && c <= 'z') || (keepAccents && IsKeptAccentedLetter(c));
 
     /// <summary>
     /// Rewrites the elided article <c>d'</c> ("D'Hondt") to <c>de </c>, so that it becomes the
@@ -88,15 +229,16 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
     /// <see cref="DutchFuzzyOptions.Words"/> preset keeps its apostrophe as a separator.
     /// </summary>
     /// <param name="value">Lower-cased, folded text.</param>
+    /// <param name="keepAccents">True when accented letters count as letters (diacritic folding is off).</param>
     /// <returns>The rewritten text, or <paramref name="value"/> itself when nothing changes.</returns>
-    internal static string ExpandElidedArticles(string value)
+    internal static string ExpandElidedArticles(string value, bool keepAccents = false)
     {
         StringBuilder? builder = null;
         var copiedUpTo = 0;
 
         for (var i = 0; i + 1 < value.Length; i++)
         {
-            if (value[i] != 'd' || !IsApostrophe(value[i + 1]))
+            if (FoldKeptAccent(value[i]) != 'd' || !IsApostrophe(value[i + 1]))
             {
                 continue;
             }
@@ -106,7 +248,7 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
                 continue;
             }
 
-            if (CountLetters(value, i + 2) < 3)
+            if (CountLetters(value, i + 2, keepAccents) < 3)
             {
                 continue;
             }
@@ -130,11 +272,11 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
     private static bool IsApostrophe(char c) =>
         c is '\'' or '’' or '‘' or '`' or '´';
 
-    private static int CountLetters(string value, int start)
+    private static int CountLetters(string value, int start, bool keepAccents)
     {
         var count = 0;
 
-        while (start + count < value.Length && value[start + count] >= 'a' && value[start + count] <= 'z')
+        while (start + count < value.Length && IsKeptLetter(value[start + count], keepAccents))
         {
             count++;
         }
@@ -235,14 +377,14 @@ public sealed class DutchTextNormalizer : IDutchTextNormalizer
         return true;
     }
 
-    private static string KeepLettersAndSpaces(string value)
+    private static string KeepLettersAndSpaces(string value, bool keepAccents)
     {
         var builder = new StringBuilder(value.Length);
         var lastWasSpace = true;
 
         foreach (var c in value)
         {
-            if (c >= 'a' && c <= 'z')
+            if (IsKeptLetter(c, keepAccents))
             {
                 builder.Append(c);
                 lastWasSpace = false;

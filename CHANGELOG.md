@@ -80,6 +80,16 @@ eerste publicatie op nuget.org.
 
 ### Opgelost
 
+- **`RemoveDiacritics = false` brak woorden op.** De normalisatie hield alleen `a`–`z` over, dus
+  elke letter met een accent werd een woordscheiding: `Céline` werd `c line` met sleutel `K LN`
+  (in plaats van `SLN`), `Müller` werd `m ller`. Nu blijven Latijnse letters met een accent
+  (U+00C0–U+024F, zoals `é`, `ü`, `ç`, `ñ`) in de tekst staan (`céline`), samengesteld in NFC; alle
+  andere tekens worden behandeld zoals met `RemoveDiacritics = true`. De fonetische sleutel vouwt
+  accenten altijd weg, dus sleutels, `SoundsLike`, de equality comparer en de index hangen niet
+  meer van de optie af: `Céline` en `Celine` delen een sleutel en scoren met de optie uit tussen 0.90
+  en 1.0 (met de optie aan 1.0). Tussenvoegsels worden ook met accent herkend (`dé Vries`,
+  `Vándenbroecke`); `DutchAffixes.IsParticle("dé")` geeft daardoor nu `true`. Geen enkele preset zet
+  de optie uit, dus sleutels en scores van `Default`, `Names` en `Words` veranderen niet.
 - **`D'Hondt` en `Dhondt` matchten niet met `De Hondt`.** De apostrof werd een spatie, waardoor
   een losse `d` overbleef die geen tussenvoegsel is: `D'Hondt` tegenover `De Hondt` scoorde 0.28 en
   `Dhondt` tegenover `De Hondt` 0.35 (preset `Names`). Een `d` vooraan een woord, direct gevolgd door
